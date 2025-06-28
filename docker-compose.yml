@@ -1,0 +1,40 @@
+services:
+  # Production service (default)
+  app:
+    profiles: ["prod", "production"]
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - RUST_LOG=info
+
+  # Development service
+  dev:
+    profiles: ["dev", "development"]
+    build:
+      context: .
+      target: development
+    working_dir: /app
+    command: >
+      bash -c "
+      (cd backend && cargo watch -x run) &
+      (cd frontend && bun install && bun run dev --host 0.0.0.0) &
+      wait
+      "
+    volumes:
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+      - cargo-cache:/usr/local/cargo/registry
+      - target-cache:/app/backend/target
+    ports:
+      - "3000:3000"
+      - "5173:5173"
+    environment:
+      - RUST_LOG=debug
+      - CARGO_TARGET_DIR=/app/backend/target
+    stdin_open: true
+    tty: true
+
+volumes:
+  cargo-cache:
+  target-cache:
