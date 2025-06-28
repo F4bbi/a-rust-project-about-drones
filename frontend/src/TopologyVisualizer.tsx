@@ -66,9 +66,17 @@ const TopologyVisualizer: React.FC<TopologyVisualizerProps> = ({ nodes, edges })
       ],
       layout: {
         name: 'circle',
-        radius: 100
-      }
+        radius: 150
+      },
+      zoomingEnabled: true,
+      panningEnabled: true
     });
+
+    // Set zoom level after layout
+    if (cyInstance.current) {
+      cyInstance.current.zoom(1.5);
+      cyInstance.current.center();
+    }
 
     // Cleanup function
     return () => {

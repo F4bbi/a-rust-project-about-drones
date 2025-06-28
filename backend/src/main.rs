@@ -74,14 +74,6 @@ use tower_http::services::ServeDir;
 use serde_json::{json, Value};
 use tokio::net::TcpListener;
 
-async fn hello() -> Json<Value> {
-    Json(json!({ "message": "Hello from Rust API!" }))
-}
-
-async fn greet(Path(name): Path<String>) -> Json<Value> {
-    Json(json!({ "message": format!("Hello, {}!", name) }))
-}
-
 async fn get_topology() -> Json<Value> {
     // Try to parse the actual config file
     match parse_config("examples/config/base.toml") {
@@ -152,31 +144,7 @@ async fn get_topology() -> Json<Value> {
         Err(_) => {
             // Fallback sample data if config file not found
             Json(json!({
-                "nodes": [
-                    {
-                        "data": {
-                            "id": "drone_1",
-                            "label": "Drone 1",
-                            "type": "drone"
-                        }
-                    },
-                    {
-                        "data": {
-                            "id": "server_1",
-                            "label": "Server 1",
-                            "type": "server"
-                        }
-                    }
-                ],
-                "edges": [
-                    {
-                        "data": {
-                            "id": "edge_1",
-                            "source": "drone_1",
-                            "target": "server_1"
-                        }
-                    }
-                ]
+                "error": {"ERROR": "Config file not found"},
             }))
         }
     }
@@ -198,8 +166,6 @@ async fn main() -> anyhow::Result<()>{
 
     thread::sleep(Duration::from_secs(1));
     let app = Router::new()
-        .route("/api/hello", get(hello))
-        .route("/api/greet/{name}", get(greet))
         .route("/api/topology", get(get_topology))
         .fallback_service(ServeDir::new("./dist").append_index_html_on_directories(true));
 
