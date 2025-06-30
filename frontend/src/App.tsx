@@ -1,13 +1,22 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import TopologyVisualizer from './TopologyVisualizer'
+import TopologyVisualizer from '@/components/ui/topology-visualizer'
 import type { ElementDefinition } from 'cytoscape'
+import ThemeToggleButton from '@/components/ui/theme-toggle'
+import { MousePointer, Plus } from 'lucide-react'
+import ToolBar from '@/components/ui/toolbar'
 
 function App() {
+  const [activeTool, setActiveTool] = useState<'cursor' | 'plus' | null>('cursor');
   const [topology, setTopology] = useState<{nodes: ElementDefinition[], edges: ElementDefinition[]}>({
     nodes: [],
     edges: []
   })
+  const tools = [
+    { id: 'cursor' as const, icon: MousePointer, label: 'Select' },
+    { id: 'plus' as const, icon: Plus, label: 'Add' },
+  ];
+
 
   useEffect(() => {
     // Fetch topology data
@@ -24,7 +33,14 @@ function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
-      <TopologyVisualizer nodes={topology.nodes} edges={topology.edges} />
+      <ToolBar activeTool={activeTool} setActiveTool={setActiveTool} />
+      <ThemeToggleButton />
+      <TopologyVisualizer
+        nodes={topology.nodes}
+        edges={topology.edges}
+        activeTool={activeTool}
+      />
+
     </div>
   )
 }
