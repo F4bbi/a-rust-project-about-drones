@@ -6,11 +6,11 @@ import ThemeToggleButton from '@/components/ui/theme-toggle'
 import ToolBar from '@/components/ui/toolbar'
 
 function App() {
-  const [activeTool, setActiveTool] = useState<'cursor' | 'plus' | 'delete' | 'message' | null>('cursor');
   const [topology, setTopology] = useState<{nodes: ElementDefinition[], edges: ElementDefinition[]}>({
     nodes: [],
     edges: []
   })
+  
   useEffect(() => {
     // Fetch topology data
     fetch('/api/topology')
@@ -26,14 +26,12 @@ function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
-      <ToolBar activeTool={activeTool} setActiveTool={setActiveTool} />
+      <ToolBar />
       <ThemeToggleButton />
       <TopologyVisualizer
         nodes={topology.nodes}
         edges={topology.edges}
-        activeTool={activeTool}
       />
-
     </div>
   )
 }

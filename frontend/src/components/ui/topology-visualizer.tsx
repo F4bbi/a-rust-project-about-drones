@@ -1,17 +1,18 @@
 import { useEffect, useRef } from 'react'
 import cytoscape from 'cytoscape'
 import type { Core, ElementDefinition } from 'cytoscape'
+import { useToolbarStore } from '../../stores/toolbarStore'
 
 interface TopologyVisualizerProps {
   nodes: ElementDefinition[]
   edges: ElementDefinition[]
-  activeTool: 'cursor' | 'plus' | 'delete' | 'message' | null
 }
 
-const TopologyVisualizer: React.FC<TopologyVisualizerProps> = ({ nodes, edges, activeTool }) => {
+const TopologyVisualizer: React.FC<TopologyVisualizerProps> = ({ nodes, edges }) => {
   const cyRef = useRef<HTMLDivElement>(null)
   const cyInstance = useRef<Core | null>(null)
-  const toolRef = useRef<'cursor' | 'plus' | 'delete' | 'message' | null>(null)
+  const { activeTool } = useToolbarStore()
+  const toolRef = useRef(activeTool)
 
   // 1. Init cytoscape solo UNA volta
   useEffect(() => {
