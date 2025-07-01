@@ -183,6 +183,7 @@ dependencies = [
  "anyhow",
  "axum",
  "bagel_bomber",
+ "base64",
  "bincode",
  "bobry_w_locie",
  "chrono",
@@ -233,6 +234,12 @@ dependencies = [
  "tungstenite",
  "wg_2024",
 ]
+
+[[package]]
+name = "base64"
+version = "0.21.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
 name = "bincode"

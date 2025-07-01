@@ -1,7 +1,7 @@
-import { MousePointer, Plus } from 'lucide-react'
+import { MousePointer, Plus, MailPlus, MessageCircle, CircleX } from 'lucide-react'
 import React from 'react'
 
-type Tool = 'cursor' | 'plus';
+type Tool = 'cursor' | 'plus' | 'delete' | 'message';
 
 interface ToolBarProps {
   activeTool: Tool | null;
@@ -11,6 +11,8 @@ interface ToolBarProps {
 const tools: { id: Tool; icon: React.ElementType; label: string }[] = [
   { id: 'cursor', icon: MousePointer, label: 'Move' },
   { id: 'plus', icon: Plus, label: 'Add Node' },
+  { id: 'delete', icon: CircleX, label: 'Delete' },
+  { id: 'message', icon: MailPlus, label: 'Send Message' },
 ]
 
 const ToolBar: React.FC<ToolBarProps> = ({ activeTool, setActiveTool }) => {

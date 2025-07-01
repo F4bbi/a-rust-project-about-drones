@@ -5,13 +5,13 @@ import type { Core, ElementDefinition } from 'cytoscape'
 interface TopologyVisualizerProps {
   nodes: ElementDefinition[]
   edges: ElementDefinition[]
-  activeTool: 'cursor' | 'plus' | null
+  activeTool: 'cursor' | 'plus' | 'delete' | 'message' | null
 }
 
 const TopologyVisualizer: React.FC<TopologyVisualizerProps> = ({ nodes, edges, activeTool }) => {
   const cyRef = useRef<HTMLDivElement>(null)
   const cyInstance = useRef<Core | null>(null)
-  const toolRef = useRef<'cursor' | 'plus' | null>(null)
+  const toolRef = useRef<'cursor' | 'plus' | 'delete' | 'message' | null>(null)
 
   // 1. Init cytoscape solo UNA volta
   useEffect(() => {
