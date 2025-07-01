@@ -1,5 +1,5 @@
-import { MousePointer, Plus, MailPlus, CircleX, Drone, Laptop, Database } from 'lucide-react'
-import React from 'react'
+import { MousePointer, Plus, MailPlus, CircleX, Plane, Laptop, Database } from 'lucide-react'
+import React, { useEffect } from 'react'
 import { useToolbarStore, type Tool } from '../../stores/toolbarStore'
 
 const tools: { id: Tool; icon: React.ElementType; label: string }[] = [
@@ -10,13 +10,37 @@ const tools: { id: Tool; icon: React.ElementType; label: string }[] = [
 ]
 
 const ToolBar: React.FC = () => {
-  const { activeTool, setActiveTool, selectedNodeType, setSelectedNodeType } = useToolbarStore();
+  const { 
+    activeTool, 
+    setActiveTool, 
+    selectedNodeType, 
+    setSelectedNodeType,
+    selectedSpecificNode,
+    setSelectedSpecificNode,
+    availableNodes,
+    setAvailableNodes
+  } = useToolbarStore();
 
   const nodeTypes = [
-    { type: 'drone' as const, icon: Drone, label: 'Drone' },
+    { type: 'drone' as const, icon: Plane, label: 'Drone' },
     { type: 'client' as const, icon: Laptop, label: 'Client' },
     { type: 'server' as const, icon: Database, label: 'Server' },
   ];
+
+  // Fetch available nodes when component mounts
+  useEffect(() => {
+    fetch('/api/nodes')
+      .then(res => res.json())
+      .then(data => {
+        setAvailableNodes(data.nodes);
+      })
+      .catch(err => console.error('Error fetching nodes:', err));
+  }, [setAvailableNodes]);
+
+  // Filter nodes by selected type
+  const filteredNodes = selectedNodeType 
+    ? availableNodes.filter(node => node.type === selectedNodeType)
+    : [];
   return (
     <div className="flex flex-col items-center justify-start pt-5 px-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-2 mb-8 transition-all duration-300">
@@ -80,6 +104,46 @@ const ToolBar: React.FC = () => {
                 </div>
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Specific Node Selector - appears when a node type is selected */}
+      {activeTool === 'plus' && selectedNodeType && filteredNodes.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-2 transition-all duration-300 animate-in slide-in-from-top-2 mt-2">
+          <div className="flex items-center space-x-2 flex-wrap max-w-md">
+            {filteredNodes.map((node) => {
+              // Get the appropriate icon based on node type
+              const IconComponent = selectedNodeType === 'drone' ? Plane : 
+                                  selectedNodeType === 'client' ? Laptop : Database;
+              
+              return (
+                <button
+                  key={node.name}
+                  onClick={() => setSelectedSpecificNode(node)}
+                  className={`
+                    relative p-3 rounded-xl transition-all duration-200 group
+                    ${selectedSpecificNode?.name === node.name 
+                      ? 'bg-green-500 text-white shadow-md' 
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
+                    }
+                  `}
+                  title={node.name}
+                >
+                  <IconComponent className="h-4 w-4" />
+
+                  {selectedSpecificNode?.name === node.name && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
+                  )}
+
+                  <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                    <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs px-2 py-1 rounded-md whitespace-nowrap">
+                      {node.name}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
