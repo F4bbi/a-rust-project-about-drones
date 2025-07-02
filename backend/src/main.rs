@@ -4,6 +4,7 @@ use std::time::Duration;
 use std::fs;
 use axum::http::StatusCode;
 use backend::network_initializer::{parse_config, spawn_network};
+use backend::server::ContentServer;
 use backend::simulation_controller::SimulationController;
 
 use axum::{
@@ -16,6 +17,19 @@ use serde_json::{json, Value};
 use tokio::net::TcpListener;
 use std::sync::{Arc, Mutex};
 use backend::utils::*;
+
+// Request structures for API endpoints
+#[derive(serde::Deserialize)]
+struct AddNodeRequest {
+    node_name: String,
+    node_type: String,
+}
+
+#[derive(serde::Deserialize)]
+struct AddEdgeRequest {
+    from_id: u8,
+    to_id: u8,
+}
 
 // Shared state structure - wraps the simulation controller for thread-safe access
 #[derive(Clone)]
@@ -181,182 +195,174 @@ async fn get_nodes() -> Json<Value> {
 }
 
 // Add a drone to the network
-// async fn add_drone(State(state): State<AppState>, ExtractJson(payload): ExtractJson<AddNodeRequest>) -> Json<Value> {
-//     println!("🚁 Adding drone: {} of type: {}", payload.node_name, payload.node_type);
+async fn add_drone(State(state): State<AppState>, ExtractJson(payload): ExtractJson<AddNodeRequest>) -> Json<Value> {
+    println!("🚁 Adding drone: {} of type: {}", payload.node_name, payload.node_type);
     
-//     // Access the simulation controller
-//     let mut controller = state.simulation_controller.lock().unwrap();
+    // Access the simulation controller
+    let mut controller = state.simulation_controller.lock().unwrap();
     
-//     println!("📊 Before adding drone:");
-//     println!("  Current drones: {:?}", controller.drones.keys().collect::<Vec<_>>());
-//     println!("  Current servers: {:?}", controller.servers.keys().collect::<Vec<_>>());
+    println!("📊 Before adding drone:");
+    println!("  Current drones: {:?}", controller.drones.keys().collect::<Vec<_>>());
+    println!("  Current servers: {:?}", controller.servers.keys().collect::<Vec<_>>());
     
-//     // Actually spawn the drone
-//     match controller.add_drone() {
-//         Ok(()) => {
-//             println!("✅ Successfully spawned drone!");
-//             println!("📊 After adding drone:");
-//             println!("  Current drones: {:?}", controller.drones.keys().collect::<Vec<_>>());
-//             println!("  Current servers: {:?}", controller.servers.keys().collect::<Vec<_>>());
+    // Actually spawn the drone
+    match controller.add_drone() {
+        Ok(()) => {
+            println!("✅ Successfully spawned drone!");
+            println!("📊 After adding drone:");
+            println!("  Current drones: {:?}", controller.drones.keys().collect::<Vec<_>>());
+            println!("  Current servers: {:?}", controller.servers.keys().collect::<Vec<_>>());
             
-//             Json(json!({
-//                 "success": true,
-//                 "message": format!("Drone '{}' added successfully", payload.node_name),
-//                 "node_type": payload.node_type,
-//                 "node_name": payload.node_name,
-//                 "total_drones": controller.drones.len(),
-//                 "total_servers": controller.servers.len()
-//             }))
-//         }
-//         Err(e) => {
-//             println!("❌ Failed to spawn drone: {}", e);
-//             Json(json!({
-//                 "success": false,
-//                 "error": format!("Failed to spawn drone: {}", e)
-//             }))
-//         }
-//     }
-// }
+            Json(json!({
+                "success": true,
+                "message": format!("Drone '{}' added successfully", payload.node_name),
+                "node_type": payload.node_type,
+                "node_name": payload.node_name,
+                "total_drones": controller.drones.len(),
+                "total_servers": controller.servers.len()
+            }))
+        }
+        Err(e) => {
+            println!("❌ Failed to spawn drone: {}", e);
+            Json(json!({
+                "success": false,
+                "error": format!("Failed to spawn drone: {}", e)
+            }))
+        }
+    }
+}
 
-// async fn send_message(State(state): State<AppState>, ExtractJson(payload): ExtractJson<AddEdgeRequest>) -> Json<Value> {
-//     println!("Sending message: {} -> {}", payload.from_id, payload.to_id);
-//     // Access the simulation controller
-//     let mut controller = state.simulation_controller.lock().unwrap();
-//     match controller.send_message(payload.from_id, payload.to_id) {
-//         Ok(()) => {
-//             println!("✅ Message sent successfully!");
-//             Json(json!({
-//                 "success": true,
-//                 "message": format!("Message sent from {} to {}", payload.from_id, payload.to_id)
-//             }))
-//         }
-//         Err(e) => {
-//             println!("❌ Failed to send message: {}", e);
-//             Json(json!({
-//                 "success": false,
-//                 "error": format!("Failed to send message: {}", e)
-//             }))
-//         }
-//     }
+async fn send_message(State(state): State<AppState>, ExtractJson(payload): ExtractJson<AddEdgeRequest>) -> Json<Value> {
+    println!("Sending message: {} -> {}", payload.from_id, payload.to_id);
+    // Access the simulation controller
+    let mut controller = state.simulation_controller.lock().unwrap();
+    match controller.send_message(payload.from_id, payload.to_id) {
+        Ok(()) => {
+            println!("✅ Message sent successfully!");
+            Json(json!({
+                "success": true,
+                "message": format!("Message sent from {} to {}", payload.from_id, payload.to_id)
+            }))
+        }
+        Err(e) => {
+            println!("❌ Failed to send message: {}", e);
+            Json(json!({
+                "success": false,
+                "error": format!("Failed to send message: {}", e)
+            }))
+        }
+    }
 
-// }
+}
 
-// // Add a client to the network
-// async fn add_client(State(state): State<AppState>, ExtractJson(payload): ExtractJson<AddNodeRequest>) -> Json<Value> {
-//     println!("Adding client: {} of type: {}", payload.node_name, payload.node_type);
+// Add a client to the network
+async fn add_client(State(state): State<AppState>, ExtractJson(payload): ExtractJson<AddNodeRequest>) -> Json<Value> {
+    println!("Adding client: {} of type: {}", payload.node_name, payload.node_type);
     
-//     // Access the simulation controller
-//     let mut controller = state.simulation_controller.lock().unwrap();
+    // Access the simulation controller
+    let mut controller = state.simulation_controller.lock().unwrap();
     
-//     println!("Current drones: {:?}", controller.drones.keys().collect::<Vec<_>>());
-//     println!("Current servers: {:?}", controller.servers.keys().collect::<Vec<_>>());
+    println!("Current drones: {:?}", controller.drones.keys().collect::<Vec<_>>());
+    println!("Current servers: {:?}", controller.servers.keys().collect::<Vec<_>>());
     
-//     // TODO: Add actual client spawning logic here
+    // TODO: Add actual client spawning logic here
     
-//     Json(json!({
-//         "success": true,
-//         "message": format!("Client '{}' added successfully", payload.node_name),
-//         "node_type": payload.node_type,
-//         "node_name": payload.node_name
-//     }))
-// }
+    Json(json!({
+        "success": true,
+        "message": format!("Client '{}' added successfully", payload.node_name),
+        "node_type": payload.node_type,
+        "node_name": payload.node_name
+    }))
+}
 
-// // Add a server to the network  
-// async fn add_server(State(state): State<AppState>, ExtractJson(payload): ExtractJson<AddNodeRequest>) -> Json<Value> {
-//     println!("🖥️  Adding server: {} of type: {}", payload.node_name, payload.node_type);
+// Add a server to the network  
+async fn add_server(State(state): State<AppState>, ExtractJson(payload): ExtractJson<AddNodeRequest>) -> Json<Value> {
+    println!("🖥️  Adding server: {} of type: {}", payload.node_name, payload.node_type);
     
-//     // Access the simulation controller
-//     let mut controller = state.simulation_controller.lock().unwrap();
+    // Access the simulation controller
+    let mut controller = state.simulation_controller.lock().unwrap();
     
-//     println!("📊 Before adding server:");
-//     println!("  Current drones: {:?}", controller.drones.keys().collect::<Vec<_>>());
-//     println!("  Current servers: {:?}", controller.servers.keys().collect::<Vec<_>>());
+    println!("📊 Before adding server:");
+    println!("  Current drones: {:?}", controller.drones.keys().collect::<Vec<_>>());
+    println!("  Current servers: {:?}", controller.servers.keys().collect::<Vec<_>>());
     
-//     // Map frontend node types to backend server types
-//     let server_type = match payload.node_type.as_str() {
-//         "Media Server" => "Content",
-//         "Text Server" => "Communication",
-//         _ => payload.node_type.as_str() // Use as-is if it's already backend format
-//     };
     
-//     // Actually spawn the server
-//     match controller.add_server(server_type.to_string()) {
-//         Ok(()) => {
-//             println!("✅ Successfully spawned {} server!", server_type);
-//             println!("📊 After adding server:");
-//             println!("  Current servers: {:?}", controller.s_handles);
+    // Actually spawn the server
+    match controller.add_server(ServerType::Media) {
+        Ok(()) => {
+            println!("📊 After adding server:");
+            println!("  Current servers: {:?}", controller.s_handles);
             
-//             Json(json!({
-//                 "success": true,
-//                 "message": format!("Server '{}' added successfully", payload.node_name),
-//                 "node_type": payload.node_type,
-//                 "node_name": payload.node_name,
-//                 "server_type": server_type,
-//                 "total_drones": controller.drones.len(),
-//                 "total_servers": controller.servers.len()
-//             }))
-//         }
-//         Err(e) => {
-//             println!("❌ Failed to spawn server: {}", e);
-//             Json(json!({
-//                 "success": false,
-//                 "error": format!("Failed to spawn server: {}", e)
-//             }))
-//         }
-//     }
-// }
+            Json(json!({
+                "success": true,
+                "message": format!("Server '{}' added successfully", payload.node_name),
+                "node_type": payload.node_type,
+                "node_name": payload.node_name,
+                "total_drones": controller.drones.len(),
+                "total_servers": controller.servers.len()
+            }))
+        }
+        Err(e) => {
+            println!("❌ Failed to spawn server: {}", e);
+            Json(json!({
+                "success": false,
+                "error": format!("Failed to spawn server: {}", e)
+            }))
+        }
+    }
+}
 
-// // Add an edge between two nodes
-// async fn add_edge(State(state): State<AppState>, ExtractJson(payload): ExtractJson<AddEdgeRequest>) -> Json<Value> {
-//     println!("🔗 Adding edge: {} -> {}", payload.from_id, payload.to_id);
+// Add an edge between two nodes
+async fn add_edge(State(state): State<AppState>, ExtractJson(payload): ExtractJson<AddEdgeRequest>) -> Json<Value> {
+    println!("🔗 Adding edge: {} -> {}", payload.from_id, payload.to_id);
     
-//     // Access the simulation controller
-//     let mut controller = state.simulation_controller.lock().unwrap();
+    // Access the simulation controller
+    let mut controller = state.simulation_controller.lock().unwrap();
     
-//     println!("📊 Current network state:");
-//     println!("  Drones: {:?}", controller.drones.keys().collect::<Vec<_>>());
-//     println!("  Servers: {:?}", controller.servers.keys().collect::<Vec<_>>());
+    println!("📊 Current network state:");
+    println!("  Drones: {:?}", controller.drones.keys().collect::<Vec<_>>());
+    println!("  Servers: {:?}", controller.servers.keys().collect::<Vec<_>>());
     
-//     // Check if both nodes exist
-//     let from_exists = controller.drones.contains_key(&payload.from_id) || controller.servers.contains_key(&payload.from_id);
-//     let to_exists = controller.drones.contains_key(&payload.to_id) || controller.servers.contains_key(&payload.to_id);
+    // Check if both nodes exist
+    let from_exists = controller.drones.contains_key(&payload.from_id) || controller.servers.contains_key(&payload.from_id);
+    let to_exists = controller.drones.contains_key(&payload.to_id) || controller.servers.contains_key(&payload.to_id);
     
-//     if !from_exists {
-//         println!("❌ Source node {} does not exist", payload.from_id);
-//         return Json(json!({
-//             "success": false,
-//             "error": format!("Source node {} does not exist", payload.from_id)
-//         }));
-//     }
+    if !from_exists {
+        println!("❌ Source node {} does not exist", payload.from_id);
+        return Json(json!({
+            "success": false,
+            "error": format!("Source node {} does not exist", payload.from_id)
+        }));
+    }
     
-//     if !to_exists {
-//         println!("❌ Target node {} does not exist", payload.to_id);
-//         return Json(json!({
-//             "success": false,
-//             "error": format!("Target node {} does not exist", payload.to_id)
-//         }));
-//     }
+    if !to_exists {
+        println!("❌ Target node {} does not exist", payload.to_id);
+        return Json(json!({
+            "success": false,
+            "error": format!("Target node {} does not exist", payload.to_id)
+        }));
+    }
     
-//     // Actually add the edge
-//     match controller.add_edge(payload.from_id, payload.to_id) {
-//         Ok(()) => {
-//             println!("✅ Successfully added edge {} -> {}!", payload.from_id, payload.to_id);
-//             Json(json!({
-//                 "success": true,
-//                 "message": format!("Edge {} -> {} added successfully", payload.from_id, payload.to_id),
-//                 "from_id": payload.from_id,
-//                 "to_id": payload.to_id
-//             }))
-//         }
-//         Err(e) => {
-//             println!("❌ Failed to add edge: {}", e);
-//             Json(json!({
-//                 "success": false,
-//                 "error": format!("Failed to add edge: {}", e)
-//             }))
-//         }
-//     }
-// }
+    // Actually add the edge
+    match controller.add_edge(payload.from_id, payload.to_id) {
+        Ok(()) => {
+            println!("✅ Successfully added edge {} -> {}!", payload.from_id, payload.to_id);
+            Json(json!({
+                "success": true,
+                "message": format!("Edge {} -> {} added successfully", payload.from_id, payload.to_id),
+                "from_id": payload.from_id,
+                "to_id": payload.to_id
+            }))
+        }
+        Err(e) => {
+            println!("❌ Failed to add edge: {}", e);
+            Json(json!({
+                "success": false,
+                "error": format!("Failed to add edge: {}", e)
+            }))
+        }
+    }
+}
 
 // async fn add_node(
 //     State(state): State<AppState>, 
@@ -408,15 +414,15 @@ async fn get_nodes() -> Json<Value> {
 // }
 
 // Simple message sending endpoint
-async fn send_message(State(state): State<AppState>) -> Json<Value> {
-    println!("📨 Send message endpoint called");
+// async fn send_message(State(state): State<AppState>) -> Json<Value> {
+//     println!("📨 Send message endpoint called");
     
-    // For now, just return a placeholder response
-    Json(json!({
-        "success": true,
-        "message": "Message sending endpoint - implementation pending"
-    }))
-}
+//     // For now, just return a placeholder response
+//     Json(json!({
+//         "success": true,
+//         "message": "Message sending endpoint - implementation pending"
+//     }))
+// }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{
@@ -428,7 +434,7 @@ async fn main() -> anyhow::Result<()>{
         spawn_network(config)?;
 
     // Create the simulation controller with all network state
-    let simulation_controller = SimulationController {
+    let mut simulation_controller = SimulationController {
         drones: controller_drones,
         servers: controller_server,
         drone_event_send: node_event_send,
@@ -438,24 +444,16 @@ async fn main() -> anyhow::Result<()>{
         packet_channels,
     };
 
-    // simulation_controller.servers
-    // .get(&2)
-    // .unwrap()
-    // .send(NodeCommand::SendMessage(
-    //     SimControllerMessage::SendMessageToPeer(
-    //         10,
-    //         Message::Request(Request::ServerType))))?;
-
-    // Create shared state with the simulation controller
     let app_state = AppState {
         simulation_controller: Arc::new(Mutex::new(simulation_controller)),
     };
-
-    thread::sleep(Duration::from_secs(1));
     
     let app = Router::new()
         .route("/api/topology", get(get_topology))
         .route("/api/nodes", get(get_nodes))
+        .route("/api/drones", post(add_drone))
+        .route("/api/servers", post(add_server))
+        .route("/api/edges", post(add_edge))
         .route("/api/messages", post(send_message))
         .with_state(app_state)
         .fallback_service(ServeDir::new("./dist").append_index_html_on_directories(true));

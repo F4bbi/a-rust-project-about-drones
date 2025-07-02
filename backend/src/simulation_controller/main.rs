@@ -71,8 +71,7 @@ impl SimulationController {
         id1: NodeId,
         id2: NodeId,
     ) -> anyhow::Result<()> {
-        //wait 10 seconds before sending a message to the server
-        // thread::sleep(Duration::from_secs(10));
+        println!("🚨🚨🚨Sending message from {} to {}", id1, id2);
         self.servers
         .get(&id1)
         .unwrap()
@@ -170,6 +169,7 @@ impl SimulationController {
                             )
                         },
                         _ => {
+                            println!("Creating content server with ID: {}", id);
                             Node::new_content_server(
                                 id,
                                 controller_server_recv,
