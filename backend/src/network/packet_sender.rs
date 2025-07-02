@@ -333,6 +333,7 @@ impl PacketSender {
                 return None;
             }
         };
+        
 
         let mut visited = vec![self.node_id];
         let mut queue = vec![vec![self.node_id]];
