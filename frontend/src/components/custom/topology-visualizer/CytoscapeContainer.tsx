@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
 import cytoscape, { type Core } from 'cytoscape'
 import { useCytoscapeEvents } from './useCytoscapeEvents'
 import type { TopologyVisualizerProps } from './types'
@@ -6,6 +6,10 @@ import type { TopologyVisualizerProps } from './types'
 interface CytoscapeContainerProps extends TopologyVisualizerProps {
   onNodeCreate?: (node: any) => void
   onEdgeCreate?: (edge: any) => void
+}
+
+export interface CytoscapeContainerRef {
+  removeEdge: (fromNodeId: string, toNodeId: string) => void
 }
 
 const cytoscapeStyles = [
@@ -70,17 +74,34 @@ const cytoscapeStyles = [
   },
 ]
 
-const CytoscapeContainer: React.FC<CytoscapeContainerProps> = ({ 
-  nodes, 
-  edges, 
-  onNodeCreate, 
-  onEdgeCreate,
-  onNodeSelect
-}) => {
-  const cyRef = useRef<HTMLDivElement>(null)
-  const cyInstance = useRef<Core | null>(null)
+const CytoscapeContainer = forwardRef<CytoscapeContainerRef, CytoscapeContainerProps>(
+  ({ nodes, edges, onNodeCreate, onEdgeCreate, onNodeSelect }, ref) => {
+    const cyRef = useRef<HTMLDivElement>(null)
+    const cyInstance = useRef<Core | null>(null)
 
-  // Initialize Cytoscape once
+    // Function to remove edge from Cytoscape
+    const removeEdgeFromGraph = (fromNodeId: string, toNodeId: string) => {
+      const cy = cyInstance.current
+      if (!cy) return
+
+      // Find and remove edges between the two nodes (bidirectional)
+      const edgesToRemove = cy.edges().filter((edge) => {
+        const source = edge.source().id()
+        const target = edge.target().id()
+        return (source === fromNodeId && target === toNodeId) || 
+               (source === toNodeId && target === fromNodeId)
+      })
+
+      edgesToRemove.remove()
+      console.log(`Removed ${edgesToRemove.length} edge(s) between ${fromNodeId} and ${toNodeId}`)
+    }
+
+    // Expose the edge removal function via ref
+    useImperativeHandle(ref, () => ({
+      removeEdge: removeEdgeFromGraph
+    }))
+
+    // Initialize Cytoscape once
   useEffect(() => {
     if (!cyRef.current || cyInstance.current) return
     
@@ -119,7 +140,10 @@ const CytoscapeContainer: React.FC<CytoscapeContainerProps> = ({
     cy.layout(layoutConfig).run()
   }, [nodes, edges])
 
-  return <div ref={cyRef} style={{ width: '100%', height: '100%' }} />
-}
+    return <div ref={cyRef} style={{ width: '100%', height: '100%' }} />
+  }
+)
+
+CytoscapeContainer.displayName = 'CytoscapeContainer'
 
 export default CytoscapeContainer

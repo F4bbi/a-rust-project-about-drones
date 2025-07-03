@@ -1,20 +1,24 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { X, Trash2 } from 'lucide-react'
 
 interface NodeDetailsProps {
   node: any
   onClose: () => void
+  onRemoveEdge?: (fromNodeId: string, toNodeId: string) => void
 }
 
-const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose }) => {
+const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemoveEdge }) => {
   if (!node) return null
 
-  // Mock data for neighbors - replace with real data from your backend
-  const neighbors = [
-    { id: '2', label: 'Server 2', type: 'server' },
+  // Initial mock data for neighbors - replace with real data from your backend
+  const initialNeighbors = [
+    { id: '10', label: 'Server 10', type: 'server' },
     { id: '3', label: 'Drone 3', type: 'drone' },
     { id: '4', label: 'Client 4', type: 'client' },
   ]
+
+  // State to manage neighbors list
+  const [neighbors, setNeighbors] = useState(initialNeighbors)
 
   // Mock statistics - replace with real data
   const statistics = {
@@ -24,7 +28,17 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose }) => {
 
   const handleRemoveNeighbor = (neighborId: string) => {
     console.log(`Remove connection between ${node.id} and ${neighborId}`)
-    // TODO: Implement actual edge removal logic
+    
+    // Remove neighbor from UI immediately
+    setNeighbors(prevNeighbors => 
+      prevNeighbors.filter(neighbor => neighbor.id !== neighborId)
+    )
+    
+    // Remove edge from Cytoscape graph
+    onRemoveEdge?.(node.id, neighborId)
+    
+    // TODO: Implement actual edge removal logic here
+    // Example: await removeEdgeAPI(node.id, neighborId)
   }
 
   return (

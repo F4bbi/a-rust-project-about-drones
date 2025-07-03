@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import type { ElementDefinition } from 'cytoscape'
-import TopologyVisualizer from '@/components/custom/topology-visualizer/TopologyVisualizer'
+import TopologyVisualizer, { type TopologyVisualizerRef } from '@/components/custom/topology-visualizer/TopologyVisualizer'
 import ThemeToggleButton from '@/components/ui/theme-toggle'
 import ToolBar from '@/components/custom/toolbar/Toolbar'
 import NodeDetailsSidebar from '@/components/custom/NodeDetailsSidebar'
@@ -12,6 +12,7 @@ function Index() {
   })
   
   const [selectedNode, setSelectedNode] = useState<any>(null)
+  const topologyRef = useRef<TopologyVisualizerRef>(null)
 
   useEffect(() => {
     // Fetch topology data
@@ -34,6 +35,27 @@ function Index() {
     setSelectedNode(null)
   }
 
+  const handleRemoveEdge = (fromNodeId: string, toNodeId: string) => {
+    console.log(`Removing edge between ${fromNodeId} and ${toNodeId}`)
+    
+    // Remove the edge from the Cytoscape graph
+    topologyRef.current?.removeEdge(fromNodeId, toNodeId)
+    
+    // Update the topology state to remove the edge
+    setTopology(prevTopology => ({
+      ...prevTopology,
+      edges: prevTopology.edges.filter(edge => {
+        const source = edge.data?.source
+        const target = edge.data?.target
+        return !((source === fromNodeId && target === toNodeId) || 
+                 (source === toNodeId && target === fromNodeId))
+      })
+    }))
+    
+    // TODO: Also send removal request to backend API
+    // Example: await removeEdgeAPI(fromNodeId, toNodeId)
+  }
+
   return (
     <div className="relative w-screen h-screen m-0 p-0 overflow-hidden">
       {/* Fixed positioned toolbar and theme toggle */}
@@ -47,6 +69,7 @@ function Index() {
       {/* Full screen topology visualizer - adjust width when sidebar is open */}
       <div className={`w-full h-full transition-all duration-300 ${selectedNode ? 'pr-80' : ''}`}>
         <TopologyVisualizer
+          ref={topologyRef}
           nodes={topology.nodes}
           edges={topology.edges}
           onNodeSelect={handleNodeSelect}
@@ -58,6 +81,7 @@ function Index() {
         <NodeDetailsSidebar
           node={selectedNode}
           onClose={handleCloseSidebar}
+          onRemoveEdge={handleRemoveEdge}
         />
       )}
     </div>
