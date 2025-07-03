@@ -1,0 +1,115 @@
+import { MousePointer, Plus, MailPlus } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { useToolbarStore, type Tool } from '@/stores/toolbarStore'
+import ToolButton from './ToolButton'
+import NodeTypeMenu from './NodeTypeMenu'
+
+const tools: { id: Tool; icon: React.ElementType; label: string }[] = [
+  { id: 'cursor', icon: MousePointer, label: 'Move' },
+  { id: 'plus', icon: Plus, label: 'Add' },
+  { id: 'message', icon: MailPlus, label: 'Send Message' },
+]
+
+const Toolbar: React.FC = () => {
+  const { 
+    activeTool, 
+    setActiveTool,
+    selectedNodeType, 
+    setSelectedNodeType,
+    selectedSpecificNode,
+    setSelectedSpecificNode,
+    availableNodes,
+    setAvailableNodes
+  } = useToolbarStore()
+
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
+  const [isNodeMenuOpen, setIsNodeMenuOpen] = useState(false)
+
+  // Fetch available nodes when component mounts
+  useEffect(() => {
+    fetch('/api/nodes')
+      .then(res => res.json())
+      .then(data => {
+        setAvailableNodes(data.nodes)
+      })
+      .catch(err => console.error('Error fetching nodes:', err))
+  }, [setAvailableNodes])
+
+  // Handle node type selection from the popup
+  const handleNodeTypeClick = (nodeType: typeof selectedNodeType) => {
+    setSelectedNodeType(nodeType)
+    // For edge type, we don't need the popover to stay open
+    if (nodeType === 'edge') {
+      setIsAddMenuOpen(false)
+    } else {
+      // For other node types, open the specific node menu
+      setIsNodeMenuOpen(true)
+    }
+  }
+
+  // Handle specific node selection
+  const handleSpecificNodeClick = (node: typeof availableNodes[0]) => {
+    setSelectedSpecificNode(node)
+    setIsNodeMenuOpen(false)
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-start pt-5 px-4">
+      {/* Main Toolbar */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-2 mb-8 transition-all duration-300">
+        <div className="flex items-center space-x-2">
+          {tools.map((tool) => (
+            <ToolButton
+              key={tool.id}
+              tool={tool}
+              isActive={activeTool === tool.id}
+              onClick={() => setActiveTool(tool.id)}
+            >
+              {tool.id === 'plus' ? (
+                <NodeTypeMenu
+                  isOpen={isAddMenuOpen}
+                  onOpenChange={setIsAddMenuOpen}
+                  selectedNodeType={selectedNodeType}
+                  selectedSpecificNode={selectedSpecificNode}
+                  availableNodes={availableNodes}
+                  isNodeMenuOpen={isNodeMenuOpen}
+                  onNodeMenuOpenChange={setIsNodeMenuOpen}
+                  onNodeTypeSelect={handleNodeTypeClick}
+                  onSpecificNodeSelect={handleSpecificNodeClick}
+                >
+                  <button
+                    onClick={() => setActiveTool(tool.id)}
+                    className={`
+                      relative p-3 rounded-xl transition-all duration-200 group
+                      ${activeTool === tool.id 
+                        ? 'bg-blue-500 text-white shadow-md' 
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
+                      }
+                    `}
+                    title={tool.label}
+                  >
+                    <tool.icon className="h-6 w-6" />
+                    
+                    {/* Active indicator */}
+                    {activeTool === tool.id && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
+                    )}
+                    
+                    {/* Tooltip */}
+                    <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                      <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs px-2 py-1 rounded-md whitespace-nowrap">
+                        {tool.label}
+                      </div>
+                    </div>
+                  </button>
+                </NodeTypeMenu>
+              ) : null}
+            </ToolButton>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Toolbar

@@ -3,7 +3,7 @@ import './App.css'
 import TopologyVisualizer from '@/components/ui/topology-visualizer'
 import type { ElementDefinition } from 'cytoscape'
 import ThemeToggleButton from '@/components/ui/theme-toggle'
-import ToolBar from '@/components/ui/toolbar'
+import ToolBar from '@/components/custom/toolbar/Toolbar'
 
 function App() {
   const [topology, setTopology] = useState<{nodes: ElementDefinition[], edges: ElementDefinition[]}>({
