@@ -100,7 +100,7 @@ const CytoscapeContainer: React.FC<CytoscapeContainerProps> = ({
       animate: true,
       avoidOverlap: true,
       infinite: false,
-      ready: (e: { cy: { fit: () => void; center: () => void } }) => {
+      ready: (e: { cy: { fit: () => void; center: () => void; zoom: (level: number) => void } }) => {
         e.cy.fit()
         e.cy.center()
       }
