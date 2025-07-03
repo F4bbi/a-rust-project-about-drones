@@ -3,6 +3,7 @@ import type { ElementDefinition } from 'cytoscape'
 import TopologyVisualizer, { type TopologyVisualizerRef } from '@/components/custom/topology-visualizer/TopologyVisualizer'
 import ThemeToggleButton from '@/components/ui/theme-toggle'
 import ToolBar from '@/components/custom/toolbar/Toolbar'
+import ControlBar from '@/components/custom/control-bar/ControlBar'
 import NodeDetailsSidebar from '@/components/custom/NodeDetailsSidebar'
 
 function Index() {
@@ -56,6 +57,18 @@ function Index() {
     // Example: await removeEdgeAPI(fromNodeId, toNodeId)
   }
 
+  const handlePlay = () => {
+    console.log('Starting simulation...')
+    // TODO: Implement simulation start logic
+    // Example: await startSimulationAPI()
+  }
+
+  const handleStop = () => {
+    console.log('Stopping simulation...')
+    // TODO: Implement simulation stop logic
+    // Example: await stopSimulationAPI()
+  }
+
   return (
     <div className="relative w-screen h-screen m-0 p-0 overflow-hidden">
       {/* Fixed positioned toolbar and theme toggle */}
@@ -75,6 +88,12 @@ function Index() {
           onNodeSelect={handleNodeSelect}
         />
       </div>
+
+      {/* Control bar at the bottom */}
+      <ControlBar 
+        onPlay={handlePlay}
+        onStop={handleStop}
+      />
 
       {/* Node details sidebar */}
       {selectedNode && (
