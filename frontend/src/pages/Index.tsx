@@ -4,6 +4,8 @@ import TopologyVisualizer, { type TopologyVisualizerRef } from '@/components/cus
 import ThemeToggleButton from '@/components/ui/theme-toggle'
 import ToolBar from '@/components/custom/toolbar/Toolbar'
 import ControlBar from '@/components/custom/control-bar/ControlBar'
+import ConfigButton from '@/components/custom/config-button/ConfigButton'
+import ConfigPopup from '@/components/custom/config-button/ConfigPopup'
 import NodeDetailsSidebar from '@/components/custom/NodeDetailsSidebar'
 
 function Index() {
@@ -13,6 +15,7 @@ function Index() {
   })
   
   const [selectedNode, setSelectedNode] = useState<any>(null)
+  const [isConfigPopupOpen, setIsConfigPopupOpen] = useState(false)
   const topologyRef = useRef<TopologyVisualizerRef>(null)
 
   useEffect(() => {
@@ -69,15 +72,28 @@ function Index() {
     // Example: await stopSimulationAPI()
   }
 
+  const handleOpenConfig = () => {
+    setIsConfigPopupOpen(true)
+  }
+
+  const handleCloseConfig = () => {
+    setIsConfigPopupOpen(false)
+  }
+
+  const handleSelectConfig = (configId: string) => {
+    console.log(`Selected configuration: ${configId}`)
+    // TODO: Implement configuration change logic
+    // Example: await applyConfigurationAPI(configId)
+    // This could reload the topology with the new configuration
+  }
+
   return (
     <div className="relative w-screen h-screen m-0 p-0 overflow-hidden">
       {/* Fixed positioned toolbar and theme toggle */}
       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 pt-5">
         <ToolBar />
       </div>
-      <div className="absolute top-4 right-4 z-10">
-        <ThemeToggleButton />
-      </div>
+      <ThemeToggleButton />
       
       {/* Full screen topology visualizer - adjust width when sidebar is open */}
       <div className={`w-full h-full transition-all duration-300 ${selectedNode ? 'pr-80' : ''}`}>
@@ -93,6 +109,16 @@ function Index() {
       <ControlBar 
         onPlay={handlePlay}
         onStop={handleStop}
+      />
+
+      {/* Configuration button at bottom right */}
+      <ConfigButton onClick={handleOpenConfig} />
+
+      {/* Configuration popup */}
+      <ConfigPopup
+        isOpen={isConfigPopupOpen}
+        onClose={handleCloseConfig}
+        onSelectConfig={handleSelectConfig}
       />
 
       {/* Node details sidebar */}

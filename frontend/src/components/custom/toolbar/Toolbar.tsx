@@ -54,7 +54,7 @@ const Toolbar: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-start pt-5 px-4">
+    <div className="flex flex-col items-center justify-start">
       {/* Main Toolbar */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-2 mb-8 transition-all duration-300">
         <div className="flex items-center space-x-2">
