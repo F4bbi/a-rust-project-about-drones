@@ -191,18 +191,16 @@ const TopologyVisualizer: React.FC<TopologyVisualizerProps> = ({ nodes, edges })
             cyInstance.current.nodes().removeClass('selected')
             clickedNode.addClass('selected')
             console.log(`Selected first node for edge: ${nodeId}`)
+          } else if (selectedNodeForEdge.current === nodeId) {
+            // Click on the same node: deselect it
+            selectedNodeForEdge.current = null
+            cyInstance.current.nodes().removeClass('selected')
+            console.log('Node deselected')
+            return
           } else {
             // Second node selection - create the edge
             const fromId = selectedNodeForEdge.current
             const toId = nodeId
-            
-            if (fromId === toId) {
-              alert('Cannot create an edge from a node to itself!')
-              // Reset selection
-              selectedNodeForEdge.current = null
-              cyInstance.current.nodes().removeClass('selected')
-              return
-            }
             
             try {
               // Create edge via API
