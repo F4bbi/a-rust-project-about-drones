@@ -31,28 +31,49 @@ const cytoscapeStyles = [
   {
     selector: 'node[type="drone"]',
     style: {
-      'background-color': 'transparent',
-      'background-image': '/drone.png',
-      'background-fit': 'contain',
-      'background-opacity': 1,
-      'background-clip': 'none',
-      'width': '50px',
-      'height': '50px',
-      'border-width': 0,
-      'shape': 'rectangle' as const,
+      'background-color': '#3498db',
+      'shape': 'triangle',
     },
   },
   {
     selector: 'node[type="server"]',
     style: {
-      'background-color': '#e74c3c',
+      'background-color': '#ffd700', // Yellow for communication server
+      'shape': 'rectangle' as const,
+    },
+  },
+  {
+    selector: 'node[type="content-server"]',
+    style: {
+      'background-color': '#ff8c00', // Orange for content server
+      'shape': 'rectangle' as const,
+    },
+  },
+  {
+    selector: 'node[type="communication-server"]',
+    style: {
+      'background-color': '#ffd700', // Yellow for communication server
       'shape': 'rectangle' as const,
     },
   },
   {
     selector: 'node[type="client"]',
     style: {
-      'background-color': '#2ecc71',
+       'background-color': '#90ee90', // Dark green for chat client
+      'shape': 'ellipse' as const,
+    },
+  },
+  {
+    selector: 'node[type="chat-client"]',
+    style: {
+      'background-color': '#90ee90', // Dark green for chat client
+      'shape': 'ellipse' as const,
+    },
+  },
+  {
+    selector: 'node[type="web-client"]',
+    style: {
+      'background-color': '#009e1a', // Light green for web client
       'shape': 'ellipse' as const,
     },
   },

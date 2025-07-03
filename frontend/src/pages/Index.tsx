@@ -6,6 +6,8 @@ import ToolBar from '@/components/custom/toolbar/Toolbar'
 import ControlBar from '@/components/custom/control-bar/ControlBar'
 import ConfigButton from '@/components/custom/config-button/ConfigButton'
 import ConfigPopup from '@/components/custom/config-button/ConfigPopup'
+import LogsButton from '@/components/custom/logs/LogsButton'
+import LogsSidebar from '@/components/custom/logs/LogsSidebar'
 import NodeDetailsSidebar from '@/components/custom/NodeDetailsSidebar'
 
 function Index() {
@@ -16,6 +18,7 @@ function Index() {
   
   const [selectedNode, setSelectedNode] = useState<any>(null)
   const [isConfigPopupOpen, setIsConfigPopupOpen] = useState(false)
+  const [isLogsSidebarOpen, setIsLogsSidebarOpen] = useState(false)
   const topologyRef = useRef<TopologyVisualizerRef>(null)
 
   useEffect(() => {
@@ -87,6 +90,14 @@ function Index() {
     // This could reload the topology with the new configuration
   }
 
+  const handleOpenLogs = () => {
+    setIsLogsSidebarOpen(true)
+  }
+
+  const handleCloseLogs = () => {
+    setIsLogsSidebarOpen(false)
+  }
+
   return (
     <div className="relative w-screen h-screen m-0 p-0 overflow-hidden">
       {/* Fixed positioned toolbar and theme toggle */}
@@ -95,8 +106,12 @@ function Index() {
       </div>
       <ThemeToggleButton />
       
-      {/* Full screen topology visualizer - adjust width when sidebar is open */}
-      <div className={`w-full h-full transition-all duration-300 ${selectedNode ? 'pr-80' : ''}`}>
+      {/* Full screen topology visualizer - adjust width when sidebars are open */}
+      <div className={`w-full h-full transition-all duration-300 ${
+        selectedNode && isLogsSidebarOpen ? 'px-80' : // Both sidebars open
+        selectedNode ? 'pr-80' : // Only node details sidebar open  
+        isLogsSidebarOpen ? 'pr-96' : '' // Only logs sidebar open
+      }`}>
         <TopologyVisualizer
           ref={topologyRef}
           nodes={topology.nodes}
@@ -111,14 +126,23 @@ function Index() {
         onStop={handleStop}
       />
 
-      {/* Configuration button at bottom right */}
+      {/* Configuration button at bottom left */}
       <ConfigButton onClick={handleOpenConfig} />
+
+      {/* Logs button at bottom right */}
+      <LogsButton onClick={handleOpenLogs} />
 
       {/* Configuration popup */}
       <ConfigPopup
         isOpen={isConfigPopupOpen}
         onClose={handleCloseConfig}
         onSelectConfig={handleSelectConfig}
+      />
+
+      {/* Logs sidebar */}
+      <LogsSidebar
+        isOpen={isLogsSidebarOpen}
+        onClose={handleCloseLogs}
       />
 
       {/* Node details sidebar */}
