@@ -1,8 +1,8 @@
 import { MousePointer, Plus, MailPlus } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useToolbarStore, type Tool } from '@/stores/toolbarStore'
-import ToolButton from './ToolButton'
-import NodeTypeMenu from './NodeTypeMenu'
+import ToolButton from '@/components/custom/toolbar/ToolButton'
+import NodeTypeMenu from '@/components/custom/toolbar/NodeTypeMenu'
 
 const tools: { id: Tool; icon: React.ElementType; label: string }[] = [
   { id: 'cursor', icon: MousePointer, label: 'Move' },

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import PopupArrow from './PopupArrow'
-import SpecificNodeButton from './SpecificNodeButton'
+import PopupArrow from '@/components/custom/toolbar/PopupArrow'
+import SpecificNodeButton from '@/components/custom/toolbar/SpecificNodeButton'
 import type { NodeType } from '@/stores/toolbarStore'
 
 interface SpecificNodeMenuProps {

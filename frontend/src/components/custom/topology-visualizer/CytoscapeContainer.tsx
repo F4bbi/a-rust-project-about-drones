@@ -27,8 +27,15 @@ const cytoscapeStyles = [
   {
     selector: 'node[type="drone"]',
     style: {
-      'background-color': '#3498db',
-      'shape': 'triangle' as const,
+      'background-color': 'transparent',
+      'background-image': '/drone.png',
+      'background-fit': 'contain',
+      'background-opacity': 1,
+      'background-clip': 'none',
+      'width': '50px',
+      'height': '50px',
+      'border-width': 0,
+      'shape': 'rectangle' as const,
     },
   },
   {
@@ -67,7 +74,8 @@ const CytoscapeContainer: React.FC<CytoscapeContainerProps> = ({
   nodes, 
   edges, 
   onNodeCreate, 
-  onEdgeCreate 
+  onEdgeCreate,
+  onNodeSelect
 }) => {
   const cyRef = useRef<HTMLDivElement>(null)
   const cyInstance = useRef<Core | null>(null)
@@ -86,7 +94,7 @@ const CytoscapeContainer: React.FC<CytoscapeContainerProps> = ({
   }, [])
 
   // Register events
-  useCytoscapeEvents(cyInstance.current!, { onNodeCreate, onEdgeCreate })
+  useCytoscapeEvents(cyInstance.current!, { onNodeCreate, onEdgeCreate, onNodeSelect })
 
   // Update elements when props change
   useEffect(() => {

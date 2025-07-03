@@ -1,9 +1,9 @@
 import React from 'react'
 import { Drone, Laptop, Database, LineSquiggle } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import PopupArrow from './PopupArrow'
-import NodeTypeButton from './NodeTypeButton'
-import SpecificNodeMenu from './SpecificNodeMenu'
+import PopupArrow from '@/components/custom/toolbar/PopupArrow'
+import NodeTypeButton from '@/components/custom/toolbar/NodeTypeButton'
+import SpecificNodeMenu from '@/components/custom/toolbar/SpecificNodeMenu'
 import type { NodeType } from '@/stores/toolbarStore'
 
 interface NodeTypeMenuProps {
