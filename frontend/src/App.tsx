@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import TopologyVisualizer from '@/components/ui/topology-visualizer'
+import TopologyVisualizer from '@/components/custom/topology-visualizer/TopologyVisualizer'
 import type { ElementDefinition } from 'cytoscape'
 import ThemeToggleButton from '@/components/ui/theme-toggle'
 import ToolBar from '@/components/custom/toolbar/Toolbar'
