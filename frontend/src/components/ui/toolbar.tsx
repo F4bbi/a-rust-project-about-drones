@@ -1,18 +1,17 @@
-import { MousePointer, Plus, MailPlus, CircleX, Plane, Laptop, Database } from 'lucide-react'
+import { MousePointer, Plus, MailPlus, Drone, Laptop, Database, LineSquiggle } from 'lucide-react'
 import React, { useEffect } from 'react'
 import { useToolbarStore, type Tool } from '../../stores/toolbarStore'
 
 const tools: { id: Tool; icon: React.ElementType; label: string }[] = [
   { id: 'cursor', icon: MousePointer, label: 'Move' },
-  { id: 'plus', icon: Plus, label: 'Add Node' },
-  { id: 'delete', icon: CircleX, label: 'Delete' },
+  { id: 'plus', icon: Plus, label: 'Add' },
   { id: 'message', icon: MailPlus, label: 'Send Message' },
 ]
 
 const ToolBar: React.FC = () => {
   const { 
     activeTool, 
-    setActiveTool, 
+    setActiveTool,
     selectedNodeType, 
     setSelectedNodeType,
     selectedSpecificNode,
@@ -22,9 +21,10 @@ const ToolBar: React.FC = () => {
   } = useToolbarStore();
 
   const nodeTypes = [
-    { type: 'drone' as const, icon: Plane, label: 'Drone' },
+    { type: 'drone' as const, icon: Drone, label: 'Drone' },
     { type: 'client' as const, icon: Laptop, label: 'Client' },
     { type: 'server' as const, icon: Database, label: 'Server' },
+    { type: 'edge' as const, icon: LineSquiggle, label: 'Edge' },
   ];
 
   // Fetch available nodes when component mounts
@@ -37,10 +37,11 @@ const ToolBar: React.FC = () => {
       .catch(err => console.error('Error fetching nodes:', err));
   }, [setAvailableNodes]);
 
-  // Filter nodes by selected type
-  const filteredNodes = selectedNodeType 
+  // Filter nodes by selected type (only for node types, not edge)
+  const filteredNodes = selectedNodeType && selectedNodeType !== 'edge'
     ? availableNodes.filter(node => node.type === selectedNodeType)
     : [];
+
   return (
     <div className="flex flex-col items-center justify-start pt-5 px-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-2 mb-8 transition-all duration-300">
@@ -74,7 +75,7 @@ const ToolBar: React.FC = () => {
         </div>
       </div>
 
-      {/* Node Type Selector - appears when 'plus' tool is active */}
+      {/* Add Options - appears when 'plus' tool is active */}
       {activeTool === 'plus' && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-2 transition-all duration-300 animate-in slide-in-from-top-2">
           <div className="flex items-center space-x-2">
@@ -108,13 +109,13 @@ const ToolBar: React.FC = () => {
         </div>
       )}
 
-      {/* Specific Node Selector - appears when a node type is selected */}
-      {activeTool === 'plus' && selectedNodeType && filteredNodes.length > 0 && (
+      {/* Specific Node Selector - appears when a node type is selected (but not for edge) */}
+      {activeTool === 'plus' && selectedNodeType && selectedNodeType !== 'edge' && filteredNodes.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-2 transition-all duration-300 animate-in slide-in-from-top-2 mt-2">
           <div className="flex items-center space-x-2 flex-wrap max-w-md">
             {filteredNodes.map((node) => {
               // Get the appropriate icon based on node type
-              const IconComponent = selectedNodeType === 'drone' ? Plane : 
+              const IconComponent = selectedNodeType === 'drone' ? Drone : 
                                   selectedNodeType === 'client' ? Laptop : Database;
               
               return (

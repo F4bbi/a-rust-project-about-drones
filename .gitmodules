@@ -1,0 +1,3 @@
+[submodule "unitn-advancedProgramming-WGL_2024-rust"]
+	path = backend
+	url = git@github.com:LuigiMiazzo17/unitn-advancedProgramming-WGL_2024-rust.git
