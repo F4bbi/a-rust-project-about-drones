@@ -15,13 +15,15 @@ interface MessageFormData {
   message?: string
   name?: string
   isPublic?: boolean
+  fileName?: string
+  fileContent?: string
 }
 
 interface MessageFormProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: MessageFormData) => void
-  messageType: 'join' | 'leave' | 'send-message' | 'create' | 'delete' | 'get-chats' | 'get-messages' | 'server-type' | string
+  messageType: 'join' | 'leave' | 'send-message' | 'create' | 'delete' | 'get-chats' | 'get-messages' | 'list-public-files' | 'get-public-file' | 'write-public-file' | 'list-private-files' | 'get-private-file' | 'write-private-file' | 'server-type' | string
 }
 
 const MessageForm: React.FC<MessageFormProps> = ({
@@ -57,8 +59,20 @@ const MessageForm: React.FC<MessageFormProps> = ({
         return 'Get Chats'
       case 'get-messages':
         return 'Get Messages'
+      case 'get-public-file':
+        return 'Get Public File'
+      case 'write-public-file':
+        return 'Write Public File'
+      case 'list-private-files':
+        return 'List Private Files'
+      case 'get-private-file':
+        return 'Get Private File'
+      case 'write-private-file':
+        return 'Write Private File'
       case 'server-type':
         return 'Server Type Message'
+      case 'list-public-files':
+        return 'List Public Files'
       default:
         return 'Message Details'
     }
@@ -80,8 +94,20 @@ const MessageForm: React.FC<MessageFormProps> = ({
         return 'Get chats doesn\'t require additional parameters.'
       case 'get-messages':
         return 'Enter the chat ID to get messages from.'
+      case 'get-public-file':
+        return 'Enter the file name to retrieve the public file.'
+      case 'write-public-file':
+        return 'Enter the file name and content to write a public file.'
+      case 'list-private-files':
+        return 'List private files doesn\'t require additional parameters.'
+      case 'get-private-file':
+        return 'Enter the file name to retrieve the private file.'
+      case 'write-private-file':
+        return 'Enter the file name and content to write a private file.'
       case 'server-type':
         return 'Server type messages don\'t require additional parameters.'
+      case 'list-public-files':
+        return 'List public files doesn\'t require additional parameters.'
       default:
         return 'Fill in the required information for this message type.'
     }
@@ -264,6 +290,121 @@ const MessageForm: React.FC<MessageFormProps> = ({
             </div>
           </div>
         )
+      case 'get-public-file':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="fileName" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                File Name
+              </label>
+              <input
+                id="fileName"
+                type="text"
+                value={formData.fileName || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('fileName', e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Enter file name"
+                required
+              />
+            </div>
+          </div>
+        )
+      case 'write-public-file':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="fileName" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                File Name
+              </label>
+              <input
+                id="fileName"
+                type="text"
+                value={formData.fileName || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('fileName', e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Enter file name"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="fileContent" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                File Content
+              </label>
+              <textarea
+                id="fileContent"
+                value={formData.fileContent || ''}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateFormData('fileContent', e.target.value)}
+                className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Enter file content"
+                rows={5}
+                required
+              />
+            </div>
+          </div>
+        )
+      case 'get-private-file':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="fileName" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                File Name
+              </label>
+              <input
+                id="fileName"
+                type="text"
+                value={formData.fileName || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('fileName', e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Enter file name"
+                required
+              />
+            </div>
+          </div>
+        )
+      case 'write-private-file':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="fileName" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                File Name
+              </label>
+              <input
+                id="fileName"
+                type="text"
+                value={formData.fileName || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData('fileName', e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Enter file name"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="fileContent" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                File Content
+              </label>
+              <textarea
+                id="fileContent"
+                value={formData.fileContent || ''}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateFormData('fileContent', e.target.value)}
+                className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Enter file content"
+                rows={5}
+                required
+              />
+            </div>
+          </div>
+        )
+      case 'list-private-files':
+        return (
+          <div className="text-center py-4">
+            <p className="text-muted-foreground">
+              List private files doesn't require additional parameters.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              You'll be able to select the source and destination nodes after clicking Continue.
+            </p>
+          </div>
+        )
       case 'get-chats':
         return (
           <div className="text-center py-4">
@@ -280,6 +421,17 @@ const MessageForm: React.FC<MessageFormProps> = ({
           <div className="text-center py-4">
             <p className="text-muted-foreground">
               Server type messages don't require additional parameters.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              You'll be able to select the source and destination nodes after clicking Continue.
+            </p>
+          </div>
+        )
+      case 'list-public-files':
+        return (
+          <div className="text-center py-4">
+            <p className="text-muted-foreground">
+              List public files doesn't require additional parameters.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
               You'll be able to select the source and destination nodes after clicking Continue.
