@@ -56,12 +56,12 @@ export function useCytoscapeEvents(cy: Core, options: CytoscapeEventsOptions = {
       
       if (!cy) return
 
-      // Handle node selection when clicking on existing nodes (and not in creation mode)
+      // Handle node selection when clicking on existing nodes (only in cursor/move mode)
       if (event.target !== cy && event.target.isNode && event.target.isNode()) {
         const clickedNode = event.target
         
-        // If we're not in node/edge creation mode, handle node selection
-        if (currentTool !== 'plus') {
+        // Only allow node selection in cursor/move mode
+        if (currentTool === 'cursor') {
           const nodeData = {
             id: clickedNode.id(),
             type: clickedNode.data('type'),
