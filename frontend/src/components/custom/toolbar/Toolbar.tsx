@@ -27,7 +27,7 @@ const Toolbar: React.FC = () => {
   const [isNodeMenuOpen, setIsNodeMenuOpen] = useState(false)
   const [isSendMessageMenuOpen, setIsSendMessageMenuOpen] = useState(false)
   const [isRequestSubMenuOpen, setIsRequestSubMenuOpen] = useState(false)
-  const [selectedRequestType, setSelectedRequestType] = useState<'chat' | 'content' | null>(null)
+  const [selectedRequestType, setSelectedRequestType] = useState<'server' | 'chat' | 'content' | null>(null)
 
   // Fetch available nodes when component mounts
   useEffect(() => {
@@ -58,9 +58,12 @@ const Toolbar: React.FC = () => {
   }
 
   // Handle request type selection from the send message menu
-  const handleRequestTypeClick = (requestType: 'chat' | 'content') => {
+  const handleRequestTypeClick = (requestType: 'server' | 'chat' | 'content') => {
     setSelectedRequestType(requestType)
-    setIsRequestSubMenuOpen(true)
+    if (requestType !== 'server') {
+      // Only set sub-menu open for chat and content (server doesn't have sub-options)
+      setIsRequestSubMenuOpen(true)
+    }
   }
 
   return (

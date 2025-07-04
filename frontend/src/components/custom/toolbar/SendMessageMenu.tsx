@@ -1,5 +1,5 @@
 import React from 'react'
-import { MessageCircle, FileText, MailOpen } from 'lucide-react'
+import { MessageCircle, FileText, Server, MailOpen } from 'lucide-react'
 import PopupArrow from './PopupArrow'
 
 interface SendMessageMenuProps {
@@ -7,12 +7,13 @@ interface SendMessageMenuProps {
   onOpenChange: (open: boolean) => void
   isSubMenuOpen: boolean
   onSubMenuOpenChange: (open: boolean) => void
-  selectedRequestType: 'chat' | 'content' | null
-  onRequestTypeSelect: (type: 'chat' | 'content') => void
+  selectedRequestType: 'server' | 'chat' | 'content' | null
+  onRequestTypeSelect: (type: 'server' | 'chat' | 'content') => void
   children: React.ReactNode
 }
 
 const requestTypes = [
+  { id: 'server', label: 'Server Type', icon: Server },
   { id: 'chat', label: 'Chat Request', icon: MessageCircle },
   { id: 'content', label: 'Content Request', icon: FileText },
 ]
@@ -45,9 +46,17 @@ const SendMessageMenu: React.FC<SendMessageMenuProps> = ({
   onRequestTypeSelect,
   children 
 }) => {
-  const handleRequestTypeClick = (requestType: 'chat' | 'content') => {
-    onRequestTypeSelect(requestType)
-    onSubMenuOpenChange(true)
+  const handleRequestTypeClick = (requestType: 'server' | 'chat' | 'content') => {
+    if (requestType === 'server') {
+      // ServerType doesn't have sub-options, so handle it directly
+      console.log('Selected: Server Type')
+      onOpenChange(false)
+      // TODO: Implement server type request logic
+    } else {
+      // Chat and Content requests have sub-menus
+      onRequestTypeSelect(requestType)
+      onSubMenuOpenChange(true)
+    }
   }
 
   const handleSpecificRequestClick = (request: any) => {
@@ -76,7 +85,7 @@ const SendMessageMenu: React.FC<SendMessageMenuProps> = ({
               {requestTypes.map((requestType) => (
                 <button
                   key={requestType.id}
-                  onClick={() => handleRequestTypeClick(requestType.id as 'chat' | 'content')}
+                  onClick={() => handleRequestTypeClick(requestType.id as 'server' | 'chat' | 'content')}
                   className={`
                     group relative p-3 rounded-lg transition-all duration-200
                     ${selectedRequestType === requestType.id 
