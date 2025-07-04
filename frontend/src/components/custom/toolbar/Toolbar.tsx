@@ -78,8 +78,8 @@ const Toolbar: React.FC = () => {
   const handleMessageTypeSelect = (messageType: string) => {
     setSelectedMessageType(messageType)
     
-    // For server-type messages, we can skip the form and go straight to node selection
-    if (messageType === 'server-type') {
+    // For server-type and get-chats messages, we can skip the form and go straight to node selection
+    if (messageType === 'server-type' || messageType === 'get-chats') {
       setActiveTool('message')
       setIsSelectingNodes(true)
       setMessageFormData({})
