@@ -27,10 +27,6 @@ WORKDIR /app
 # Install cargo-watch for hot reloading
 RUN cargo install cargo-watch
 
-# Install Bun
-RUN curl -fsSL https://bun.sh/install | bash
-ENV PATH="/root/.bun/bin:$PATH"
-
 # Create directories for volume mounts
 RUN mkdir -p /app/backend /app/frontend
 
@@ -38,8 +34,21 @@ RUN mkdir -p /app/backend /app/frontend
 FROM debian:bookworm-slim
 WORKDIR /app
 
-COPY --from=build-backend /app/target/release/backend ./backend
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build-backend /app/target/release/unitn-advancedProgramming-WGL_2024-rust ./backend
 COPY --from=build-frontend /app/dist ./dist
+
+# Copy required configuration and asset files
+COPY backend/examples ./examples
+COPY backend/assets ./assets
+COPY backend/Cargo.toml ./Cargo.toml
+
+# Make the binary executable
+RUN chmod +x ./backend
 
 EXPOSE 3000
 
