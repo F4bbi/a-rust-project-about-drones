@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { X, Trash2 } from 'lucide-react'
+import { X, Trash2, AlertTriangle, Wifi } from 'lucide-react'
+import { setDronePacketDropRate, crashDrone } from './topology-visualizer/messageApi'
 
 interface NodeDetailsProps {
   node: any
@@ -19,6 +20,10 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
 
   // State to manage neighbors list
   const [neighbors, setNeighbors] = useState(initialNeighbors)
+  
+  // Drone-specific state
+  const [packetDropRate, setPacketDropRate] = useState(0.0)
+  const [isDroneOnline, setIsDroneOnline] = useState(true)
 
   // Mock statistics - replace with real data
   const statistics = {
@@ -41,10 +46,39 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
     // Example: await removeEdgeAPI(node.id, neighborId)
   }
 
+  // Drone-specific handlers
+  const handleSetPacketDropRate = async () => {
+    try {
+      console.log(`Setting packet drop rate for drone ${node.id} to ${packetDropRate}`)
+      await setDronePacketDropRate(node.id, packetDropRate)
+      alert(`Packet drop rate set to ${(packetDropRate * 100).toFixed(1)}%`)
+    } catch (error) {
+      console.error('Failed to set packet drop rate:', error)
+      alert('Failed to set packet drop rate')
+    }
+  }
+
+  const handleCrashDrone = async () => {
+    if (!confirm(`Are you sure you want to crash drone ${node.label}? This action cannot be undone.`)) {
+      return
+    }
+    
+    try {
+      console.log(`Crashing drone ${node.id}`)
+      await crashDrone(node.id)
+      setIsDroneOnline(false)
+      
+      alert(`Drone ${node.label} has been crashed and disconnected from the network`)
+    } catch (error) {
+      console.error('Failed to crash drone:', error)
+      alert('Failed to crash drone')
+    }
+  }
+
   return (
-    <div className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 z-20 transform transition-transform duration-300">
+    <div className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 z-20 transform transition-transform duration-300 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           {node.label}
         </h2>
@@ -57,7 +91,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-6 h-full overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Neighbors Section */}
         <div>
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
@@ -150,6 +184,71 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
             </div>
           </div>
         </div>
+
+        {/* Drone-specific Controls */}
+        {node.type === 'drone' && (
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+              Drone Controls
+            </h3>
+            <div className="space-y-3">
+              {/* Packet Drop Rate Control */}
+              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Wifi className="inline h-4 w-4 mr-2" />
+                  Set Packet Drop Rate
+                </label>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={packetDropRate}
+                    onChange={(e) => setPacketDropRate(parseFloat(e.target.value) || 0)}
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="0.00"
+                  />
+                  <button
+                    onClick={handleSetPacketDropRate}
+                    className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    Set
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Range: 0.0 (0%) to 1.0 (100%)
+                </p>
+              </div>
+
+              {/* Crash Drone Button */}
+              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <AlertTriangle className="inline h-4 w-4 mr-2" />
+                      Crash Drone
+                    </label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {isDroneOnline ? 'Drone is currently online' : 'Drone is offline/crashed'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleCrashDrone}
+                    disabled={!isDroneOnline}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                      isDroneOnline
+                        ? 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-500'
+                        : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    {isDroneOnline ? 'Crash' : 'Crashed'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

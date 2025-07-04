@@ -57,3 +57,35 @@ const getMessageEndpoint = (messageType: string): string => {
       throw new Error(`Unknown message type: ${messageType}`);
   }
 };
+
+// API functions for drone-specific operations
+export const setDronePacketDropRate = async (droneId: string, dropRate: number) => {
+  const response = await fetch(`/api/drones/${droneId}/packet-drop-rate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ drop_rate: dropRate }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+export const crashDrone = async (droneId: string) => {
+  const response = await fetch(`/api/drones/${droneId}/crash`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+};
