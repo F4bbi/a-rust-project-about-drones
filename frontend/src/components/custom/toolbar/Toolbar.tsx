@@ -47,6 +47,22 @@ const Toolbar: React.FC = () => {
       .catch(err => console.error('Error fetching nodes:', err))
   }, [setAvailableNodes])
 
+  // Handle tool changes and cleanup menu states
+  const handleToolChange = (toolId: Tool) => {
+    setActiveTool(toolId)
+    
+    // Close all menus when switching tools
+    if (toolId !== 'plus') {
+      setIsAddMenuOpen(false)
+      setIsNodeMenuOpen(false)
+    }
+    if (toolId !== 'message') {
+      setIsSendMessageMenuOpen(false)
+      setIsRequestSubMenuOpen(false)
+      setSelectedRequestType(null)
+    }
+  }
+
   // Handle node type selection from the popup
   const handleNodeTypeClick = (nodeType: typeof selectedNodeType) => {
     setSelectedNodeType(nodeType)
@@ -56,6 +72,15 @@ const Toolbar: React.FC = () => {
     } else {
       // For other node types, open the specific node menu
       setIsNodeMenuOpen(true)
+    }
+  }
+
+  // Handle add menu changes
+  const handleAddMenuChange = (isOpen: boolean) => {
+    setIsAddMenuOpen(isOpen)
+    if (!isOpen) {
+      // Close sub-menu when main menu closes
+      setIsNodeMenuOpen(false)
     }
   }
 
@@ -71,6 +96,16 @@ const Toolbar: React.FC = () => {
     if (requestType !== 'server') {
       // Only set sub-menu open for chat and content (server doesn't have sub-options)
       setIsRequestSubMenuOpen(true)
+    }
+  }
+
+  // Handle send message menu changes
+  const handleSendMessageMenuChange = (isOpen: boolean) => {
+    setIsSendMessageMenuOpen(isOpen)
+    if (!isOpen) {
+      // Close sub-menu when main menu closes
+      setIsRequestSubMenuOpen(false)
+      setSelectedRequestType(null)
     }
   }
 
@@ -114,12 +149,12 @@ const Toolbar: React.FC = () => {
               key={tool.id}
               tool={tool}
               isActive={activeTool === tool.id}
-              onClick={() => setActiveTool(tool.id)}
+              onClick={() => handleToolChange(tool.id)}
             >
               {tool.id === 'plus' ? (
                 <NodeTypeMenu
                   isOpen={isAddMenuOpen}
-                  onOpenChange={setIsAddMenuOpen}
+                  onOpenChange={handleAddMenuChange}
                   selectedNodeType={selectedNodeType}
                   selectedSpecificNode={selectedSpecificNode}
                   availableNodes={availableNodes}
@@ -129,7 +164,7 @@ const Toolbar: React.FC = () => {
                   onSpecificNodeSelect={handleSpecificNodeClick}
                 >
                   <button
-                    onClick={() => setActiveTool(tool.id)}
+                    onClick={() => handleToolChange(tool.id)}
                     className={`
                       relative p-3 rounded-xl transition-all duration-200 group
                       ${activeTool === tool.id 
@@ -157,7 +192,7 @@ const Toolbar: React.FC = () => {
               ) : tool.id === 'message' ? (
                 <SendMessageMenu
                   isOpen={isSendMessageMenuOpen}
-                  onOpenChange={setIsSendMessageMenuOpen}
+                  onOpenChange={handleSendMessageMenuChange}
                   isSubMenuOpen={isRequestSubMenuOpen}
                   onSubMenuOpenChange={setIsRequestSubMenuOpen}
                   selectedRequestType={selectedRequestType}
@@ -165,7 +200,7 @@ const Toolbar: React.FC = () => {
                   onMessageTypeSelect={handleMessageTypeSelect}
                 >
                   <button
-                    onClick={() => setActiveTool(tool.id)}
+                    onClick={() => handleToolChange(tool.id)}
                     className={`
                       relative p-3 rounded-xl transition-all duration-200 group
                       ${activeTool === tool.id 
