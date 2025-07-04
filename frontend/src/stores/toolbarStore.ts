@@ -22,12 +22,26 @@ interface ToolbarState {
   selectedSpecificNode: NodeData | null;
   availableNodes: NodeData[];
   createdNodes: CreatedNode[];
+  
+  // Message-related state
+  selectedMessageType: string | null;
+  messageFormData: any;
+  isSelectingNodes: boolean;
+  selectedFromNode: string | null;
+  
   setActiveTool: (tool: Tool) => void;
   setSelectedNodeType: (nodeType: NodeType | null) => void;
   setSelectedSpecificNode: (node: NodeData | null) => void;
   setAvailableNodes: (nodes: NodeData[]) => void;
   addCreatedNode: (node: CreatedNode) => void;
   resetToolbar: () => void;
+  
+  // Message-related actions
+  setSelectedMessageType: (messageType: string | null) => void;
+  setMessageFormData: (data: any) => void;
+  setIsSelectingNodes: (selecting: boolean) => void;
+  setSelectedFromNode: (nodeId: string | null) => void;
+  resetMessageState: () => void;
 }
 
 export const useToolbarStore = create<ToolbarState>((set) => ({
@@ -36,6 +50,13 @@ export const useToolbarStore = create<ToolbarState>((set) => ({
   selectedSpecificNode: null,
   availableNodes: [],
   createdNodes: [],
+  
+  // Message-related state
+  selectedMessageType: null,
+  messageFormData: {},
+  isSelectingNodes: false,
+  selectedFromNode: null,
+  
   setActiveTool: (tool: Tool) => set((state) => ({
     activeTool: tool,
     // Reset selections when switching away from 'plus' tool
@@ -54,4 +75,16 @@ export const useToolbarStore = create<ToolbarState>((set) => ({
     selectedNodeType: null, 
     selectedSpecificNode: null 
   }),
+  
+  // Message-related actions
+  setSelectedMessageType: (messageType: string | null) => set({ selectedMessageType: messageType }),
+  setMessageFormData: (data: any) => set({ messageFormData: data }),
+  setIsSelectingNodes: (selecting: boolean) => set({ isSelectingNodes: selecting }),
+  setSelectedFromNode: (nodeId: string | null) => set({ selectedFromNode: nodeId }),
+  resetMessageState: () => set({
+    selectedMessageType: null,
+    messageFormData: {},
+    isSelectingNodes: false,
+    selectedFromNode: null
+  })
 }));

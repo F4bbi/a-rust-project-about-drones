@@ -4,6 +4,7 @@ import { useToolbarStore, type Tool } from '@/stores/toolbarStore'
 import ToolButton from '@/components/custom/toolbar/ToolButton'
 import NodeTypeMenu from '@/components/custom/toolbar/NodeTypeMenu'
 import SendMessageMenu from '@/components/custom/toolbar/SendMessageMenu'
+import MessageForm, { type MessageFormData } from '@/components/custom/message/MessageForm'
 
 const tools: { id: Tool; icon: React.ElementType; label: string }[] = [
   { id: 'cursor', icon: MousePointer, label: 'Move' },
@@ -20,7 +21,13 @@ const Toolbar: React.FC = () => {
     selectedSpecificNode,
     setSelectedSpecificNode,
     availableNodes,
-    setAvailableNodes
+    setAvailableNodes,
+    
+    // Message-related state
+    selectedMessageType,
+    setSelectedMessageType,
+    setMessageFormData,
+    setIsSelectingNodes
   } = useToolbarStore()
 
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
@@ -28,6 +35,7 @@ const Toolbar: React.FC = () => {
   const [isSendMessageMenuOpen, setIsSendMessageMenuOpen] = useState(false)
   const [isRequestSubMenuOpen, setIsRequestSubMenuOpen] = useState(false)
   const [selectedRequestType, setSelectedRequestType] = useState<'server' | 'chat' | 'content' | null>(null)
+  const [isMessageFormOpen, setIsMessageFormOpen] = useState(false)
 
   // Fetch available nodes when component mounts
   useEffect(() => {
@@ -64,6 +72,36 @@ const Toolbar: React.FC = () => {
       // Only set sub-menu open for chat and content (server doesn't have sub-options)
       setIsRequestSubMenuOpen(true)
     }
+  }
+
+  // Handle message type selection
+  const handleMessageTypeSelect = (messageType: string) => {
+    setSelectedMessageType(messageType)
+    
+    // For server-type messages, we can skip the form and go straight to node selection
+    if (messageType === 'server-type') {
+      setActiveTool('message')
+      setIsSelectingNodes(true)
+      setMessageFormData({})
+    } else {
+      // For other messages, open the form
+      setIsMessageFormOpen(true)
+    }
+  }
+
+  // Handle message form submission
+  const handleMessageFormSubmit = (formData: MessageFormData) => {
+    setMessageFormData(formData)
+    setIsMessageFormOpen(false)
+    setActiveTool('message')
+    setIsSelectingNodes(true)
+  }
+
+  // Handle message form close
+  const handleMessageFormClose = () => {
+    setIsMessageFormOpen(false)
+    setSelectedMessageType(null)
+    setSelectedRequestType(null)
   }
 
   return (
@@ -124,6 +162,7 @@ const Toolbar: React.FC = () => {
                   onSubMenuOpenChange={setIsRequestSubMenuOpen}
                   selectedRequestType={selectedRequestType}
                   onRequestTypeSelect={handleRequestTypeClick}
+                  onMessageTypeSelect={handleMessageTypeSelect}
                 >
                   <button
                     onClick={() => setActiveTool(tool.id)}
@@ -156,6 +195,14 @@ const Toolbar: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Message Form */}
+      <MessageForm
+        isOpen={isMessageFormOpen}
+        onClose={handleMessageFormClose}
+        onSubmit={handleMessageFormSubmit}
+        messageType={selectedMessageType || ''}
+      />
     </div>
   )
 }

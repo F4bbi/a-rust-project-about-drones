@@ -9,6 +9,7 @@ interface SendMessageMenuProps {
   onSubMenuOpenChange: (open: boolean) => void
   selectedRequestType: 'server' | 'chat' | 'content' | null
   onRequestTypeSelect: (type: 'server' | 'chat' | 'content') => void
+  onMessageTypeSelect: (messageType: string) => void
   children: React.ReactNode
 }
 
@@ -44,14 +45,14 @@ const SendMessageMenu: React.FC<SendMessageMenuProps> = ({
   onSubMenuOpenChange,
   selectedRequestType,
   onRequestTypeSelect,
+  onMessageTypeSelect,
   children 
 }) => {
   const handleRequestTypeClick = (requestType: 'server' | 'chat' | 'content') => {
     if (requestType === 'server') {
       // ServerType doesn't have sub-options, so handle it directly
-      console.log('Selected: Server Type')
+      onMessageTypeSelect('server-type')
       onOpenChange(false)
-      // TODO: Implement server type request logic
     } else {
       // Chat and Content requests have sub-menus
       onRequestTypeSelect(requestType)
@@ -60,11 +61,9 @@ const SendMessageMenu: React.FC<SendMessageMenuProps> = ({
   }
 
   const handleSpecificRequestClick = (request: any) => {
-    const requestTypeLabel = selectedRequestType === 'chat' ? 'Chat Request' : 'Content Request'
-    console.log(`Selected: ${requestTypeLabel} - ${request.label}`)
+    onMessageTypeSelect(request.id)
     onOpenChange(false)
     onSubMenuOpenChange(false)
-    // TODO: Implement specific request logic
   }
 
   const getCurrentRequests = () => {

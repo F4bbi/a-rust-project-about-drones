@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { Core } from 'cytoscape'
 import { useToolbarStore } from '@/stores/toolbarStore'
 import { createNode, createEdge } from './api'
+import { sendMessage } from './messageApi'
 
 interface CytoscapeEventsOptions {
   onNodeCreate?: (node: any) => void
@@ -15,7 +16,15 @@ export function useCytoscapeEvents(cy: Core, options: CytoscapeEventsOptions = {
     selectedNodeType, 
     selectedSpecificNode,
     addCreatedNode,
-    resetToolbar
+    resetToolbar,
+    
+    // Message-related state
+    selectedMessageType,
+    messageFormData,
+    isSelectingNodes,
+    selectedFromNode,
+    setSelectedFromNode,
+    resetMessageState
   } = useToolbarStore()
   
   const toolRef = useRef(activeTool)
@@ -69,6 +78,47 @@ export function useCytoscapeEvents(cy: Core, options: CytoscapeEventsOptions = {
             position: clickedNode.position()
           }
           options.onNodeSelect?.(nodeData)
+          return
+        }
+        
+        // Handle message node selection
+        if (currentTool === 'message' && isSelectingNodes) {
+          const nodeId = clickedNode.id()
+          
+          if (!selectedFromNode) {
+            // First node selection
+            setSelectedFromNode(nodeId)
+            // Add visual feedback - highlight the selected node
+            cy.nodes().removeClass('selected')
+            clickedNode.addClass('selected')
+            console.log(`Selected source node for message: ${nodeId}`)
+          } else if (selectedFromNode === nodeId) {
+            // Click on the same node: deselect it
+            setSelectedFromNode(null)
+            cy.nodes().removeClass('selected')
+            console.log('Source node deselected')
+            return
+          } else {
+            // Second node selection - send the message
+            const fromId = selectedFromNode
+            const toId = nodeId
+            
+            try {
+              // Send message via API
+              const result = await sendMessage(selectedMessageType!, fromId, toId, messageFormData)
+              
+              console.log('Message sent successfully:', result)
+              alert(`Message sent successfully!\nType: ${selectedMessageType}\nFrom: ${fromId}\nTo: ${toId}`)
+              
+              // Reset message state
+              resetMessageState()
+              cy.nodes().removeClass('selected')
+              
+            } catch (error) {
+              console.error('Failed to send message:', error)
+              alert(`Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`)
+            }
+          }
           return
         }
       }
