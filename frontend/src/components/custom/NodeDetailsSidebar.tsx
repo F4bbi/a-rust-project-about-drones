@@ -31,6 +31,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
   const [neighbors, setNeighbors] = useState<Neighbor[]>([]);
   const [label, setLabel] = useState("Unknown Node");
   const [node_type, setNodeType] = useState("Unknown Type");
+  const [packet_drop_rate, setPacketDropRate] = useState(0.0);
 
   useEffect(() => {
     // Fetch topology data
@@ -40,18 +41,17 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
         setNeighbors(data.neighbours || []);
         setLabel(data.label || "Unknown Node");
         setNodeType(data.type || "Unknown Type");
+        if (data.type === "drone") {
+          setPacketDropRate(data.packet_drop_rate || 0.0);
+          console.log(
+            `Drone ${node_id} packet drop rate: ${data.packet_drop_rate}`,
+          );
+        }
       })
       .catch((err) => console.error("Error fetching topology:", err));
   }, [node_id_or_undefined]);
 
   // Drone-specific state
-  const [packetDropRate, setPacketDropRate] = useState(0.0);
-
-  // Mock statistics - replace with real data
-  const statistics = {
-    packetsSent: 1247,
-    packetsDropped: 23,
-  };
 
   const handleRemoveNeighbor = (neighborId: string) => {
     console.log(`Remove connection between ${node_id} and ${neighborId}`);
@@ -69,13 +69,11 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
   const handleSetPacketDropRate = async () => {
     try {
       console.log(
-        `Setting packet drop rate for drone ${node_id} to ${packetDropRate}`,
+        `Setting packet drop rate for drone ${node_id} to ${packet_drop_rate}`,
       );
-      await setDronePacketDropRate(node_id, packetDropRate);
-      alert(`Packet drop rate set to ${(packetDropRate * 100).toFixed(1)}%`);
+      await setDronePacketDropRate(node_id, packet_drop_rate);
     } catch (error) {
       console.error("Failed to set packet drop rate:", error);
-      alert("Failed to set packet drop rate");
     }
   };
 
@@ -156,60 +154,6 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
           </div>
         </div>
 
-        {/* Statistics Section */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-            Statistics
-          </h3>
-          <div className="space-y-3">
-            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Packets Sent
-                </span>
-                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                  {statistics.packetsSent.toLocaleString()}
-                </span>
-              </div>
-            </div>
-            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Packets Dropped
-                </span>
-                <span className="text-lg font-bold text-red-600 dark:text-red-400">
-                  {statistics.packetsDropped.toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            {/* Success Rate */}
-            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Success Rate
-                </span>
-                <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                  {(
-                    ((statistics.packetsSent - statistics.packetsDropped) /
-                      statistics.packetsSent) *
-                    100
-                  ).toFixed(1)}
-                  %
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                <div
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                  style={{
-                    width: `${((statistics.packetsSent - statistics.packetsDropped) / statistics.packetsSent) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Drone-specific Controls */}
         {node_type === "drone" && (
           <div>
@@ -229,10 +173,17 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
                     min="0"
                     max="1"
                     step="0.01"
-                    value={packetDropRate}
-                    onChange={(e) =>
-                      setPacketDropRate(parseFloat(e.target.value) || 0)
-                    }
+                    value={packet_drop_rate.toFixed(2)}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+
+                      if (isNaN(v) || v < 0 || v > 1) {
+                        alert("Please enter a valid rate between 0.0 and 1.0");
+                        setPacketDropRate(packet_drop_rate);
+                      } else {
+                        setPacketDropRate(v);
+                      }
+                    }}
                     className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="0.00"
                   />

@@ -68,12 +68,12 @@ export const setDronePacketDropRate = async (
   droneId: string,
   dropRate: number,
 ) => {
-  const response = await fetch(`/api/drones/${droneId}/packet-drop-rate`, {
-    method: "POST",
+  const response = await fetch(`/api/drone/${droneId}/pdr`, {
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ drop_rate: dropRate }),
+    body: JSON.stringify({ pdr: dropRate }),
   });
 
   if (!response.ok) {
