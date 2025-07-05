@@ -6,8 +6,8 @@ import ToolBar from '@/components/custom/toolbar/Toolbar'
 import ControlBar from '@/components/custom/control-bar/ControlBar'
 import ConfigButton from '@/components/custom/config-button/ConfigButton'
 import ConfigPopup from '@/components/custom/config-button/ConfigPopup'
-import LogsButton from '@/components/custom/logs/LogsButton'
-import LogsSidebar from '@/components/custom/logs/LogsSidebar'
+import LogsButton from '@/components/custom/logs-button/LogsButton'
+import LogsSidebar from '@/components/custom/logs-button/LogsSidebar'
 import NodeDetailsSidebar from '@/components/custom/NodeDetailsSidebar'
 
 function Index() {
