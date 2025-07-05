@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { X, Trash2, AlertTriangle, Wifi } from "lucide-react";
 import {
   setDronePacketDropRate,
-  crashDrone,
+  crashDrone as crashNode,
 } from "./topology-visualizer/messageApi";
 
 interface NodeDetailsProps {
-  node: any;
+  node_id_or_undefined: string | undefined;
   onClose: () => void;
   onRemoveEdge?: (fromNodeId: string, toNodeId: string) => void;
+  onNodeCrash: (nodeId: string) => void;
 }
 
 type Neighbor = {
@@ -18,30 +19,33 @@ type Neighbor = {
 };
 
 const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
-  node,
+  node_id_or_undefined,
   onClose,
   onRemoveEdge,
+  onNodeCrash,
 }) => {
-  if (!node) return null;
+  if (!node_id_or_undefined) return null;
+  const node_id = node_id_or_undefined || "";
 
   // State to manage neighbors list
   const [neighbors, setNeighbors] = useState<Neighbor[]>([]);
-  const [label, setLabel] = useState(node.label || "Unknown Node");
+  const [label, setLabel] = useState("Unknown Node");
+  const [node_type, setNodeType] = useState("Unknown Type");
 
   useEffect(() => {
     // Fetch topology data
-    fetch("/api/node/" + node.id)
+    fetch("/api/node/" + node_id)
       .then((res) => res.json())
       .then((data) => {
         setNeighbors(data.neighbours || []);
         setLabel(data.label || "Unknown Node");
+        setNodeType(data.type || "Unknown Type");
       })
       .catch((err) => console.error("Error fetching topology:", err));
-  }, [node]);
+  }, [node_id_or_undefined]);
 
   // Drone-specific state
   const [packetDropRate, setPacketDropRate] = useState(0.0);
-  const [isDroneOnline, setIsDroneOnline] = useState(true);
 
   // Mock statistics - replace with real data
   const statistics = {
@@ -50,7 +54,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
   };
 
   const handleRemoveNeighbor = (neighborId: string) => {
-    console.log(`Remove connection between ${node.id} and ${neighborId}`);
+    console.log(`Remove connection between ${node_id} and ${neighborId}`);
 
     // Remove neighbor from UI immediately
     setNeighbors((prevNeighbors) =>
@@ -58,16 +62,16 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
     );
 
     // Remove edge from Cytoscape graph
-    onRemoveEdge?.(node.id, neighborId);
+    onRemoveEdge?.(node_id, neighborId);
   };
 
   // Drone-specific handlers
   const handleSetPacketDropRate = async () => {
     try {
       console.log(
-        `Setting packet drop rate for drone ${node.id} to ${packetDropRate}`,
+        `Setting packet drop rate for drone ${node_id} to ${packetDropRate}`,
       );
-      await setDronePacketDropRate(node.id, packetDropRate);
+      await setDronePacketDropRate(node_id, packetDropRate);
       alert(`Packet drop rate set to ${(packetDropRate * 100).toFixed(1)}%`);
     } catch (error) {
       console.error("Failed to set packet drop rate:", error);
@@ -75,26 +79,15 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
     }
   };
 
-  const handleCrashDrone = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to crash drone ${node.label}? This action cannot be undone.`,
-      )
-    ) {
-      return;
-    }
-
+  const handleCrashNode = async () => {
     try {
-      console.log(`Crashing drone ${node.id}`);
-      await crashDrone(node.id);
-      setIsDroneOnline(false);
-
-      alert(
-        `Drone ${node.label} has been crashed and disconnected from the network`,
-      );
+      console.log(`Crashing node ${node_id}`);
+      await crashNode(node_id);
+      onNodeCrash(node_id);
+      node_id_or_undefined = undefined;
     } catch (error) {
-      console.error("Failed to crash drone:", error);
-      alert("Failed to crash drone");
+      console.error("Failed to crash node:", error);
+      alert("Failed to crash node");
     }
   };
 
@@ -218,7 +211,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
         </div>
 
         {/* Drone-specific Controls */}
-        {node.type === "drone" && (
+        {node_type === "drone" && (
           <div>
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
               Drone Controls
@@ -254,37 +247,30 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
                   Range: 0.0 (0%) to 1.0 (100%)
                 </p>
               </div>
-
-              {/* Crash Drone Button */}
-              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      <AlertTriangle className="inline h-4 w-4 mr-2" />
-                      Crash Drone
-                    </label>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {isDroneOnline
-                        ? "Drone is currently online"
-                        : "Drone is offline/crashed"}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleCrashDrone}
-                    disabled={!isDroneOnline}
-                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                      isDroneOnline
-                        ? "bg-red-500 hover:bg-red-600 text-white focus:ring-red-500"
-                        : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    {isDroneOnline ? "Crash" : "Crashed"}
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         )}
+
+        {/* Crash Drone Button */}
+        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <AlertTriangle className="inline h-4 w-4 mr-2" />
+                Crash {node_type}
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Node is currently online
+              </p>
+            </div>
+            <button
+              onClick={handleCrashNode}
+              className="px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-500 hover:bg-red-600 text-white focus:ring-red-500"
+            >
+              Crash
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -53,19 +53,6 @@ function Index() {
     // Remove the edge from the Cytoscape graph
     topologyRef.current?.removeEdge(fromNodeId, toNodeId);
 
-    // Update the topology state to remove the edge
-    setTopology((prevTopology) => ({
-      ...prevTopology,
-      edges: prevTopology.edges.filter((edge) => {
-        const source = edge.data?.source;
-        const target = edge.data?.target;
-        return !(
-          (source === fromNodeId && target === toNodeId) ||
-          (source === toNodeId && target === fromNodeId)
-        );
-      }),
-    }));
-
     fetch("/api/edges", {
       method: "DELETE",
       headers: {
@@ -78,6 +65,12 @@ function Index() {
     }).catch((err) => {
       console.error("Error removing edge:", err);
     });
+  };
+
+  const handleNodeCrash = (nodeId: string) => {
+    console.log(`Node ${nodeId} has crashed`);
+    topologyRef.current?.removeNode(nodeId);
+    setSelectedNode(null);
   };
 
   const handlePlay = () => {
@@ -165,9 +158,10 @@ function Index() {
       {/* Node details sidebar */}
       {selectedNode && (
         <NodeDetailsSidebar
-          node={selectedNode}
+          node_id_or_undefined={selectedNode.id}
           onClose={handleCloseSidebar}
           onRemoveEdge={handleRemoveEdge}
+          onNodeCrash={handleNodeCrash}
         />
       )}
     </div>

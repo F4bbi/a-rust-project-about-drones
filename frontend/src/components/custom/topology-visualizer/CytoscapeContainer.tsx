@@ -1,170 +1,205 @@
-import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
-import cytoscape, { type Core } from 'cytoscape'
-import { useCytoscapeEvents } from './useCytoscapeEvents'
-import type { TopologyVisualizerProps } from './types'
+import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
+import cytoscape, { type Core } from "cytoscape";
+import { useCytoscapeEvents } from "./useCytoscapeEvents";
+import type { TopologyVisualizerProps } from "./types";
 
 interface CytoscapeContainerProps extends TopologyVisualizerProps {
-  onNodeCreate?: (node: any) => void
-  onEdgeCreate?: (edge: any) => void
+  onNodeCreate?: (node: any) => void;
+  onEdgeCreate?: (edge: any) => void;
 }
 
 export interface CytoscapeContainerRef {
-  removeEdge: (fromNodeId: string, toNodeId: string) => void
+  removeEdge: (fromNodeId: string, toNodeId: string) => void;
+  removeNode: (nodeId: string) => void;
 }
 
 const cytoscapeStyles = [
   {
-    selector: 'node',
+    selector: "node",
     style: {
-      'background-color': '#666',
-      'label': 'data(label)',
-      'text-valign': 'center' as const,
-      'text-halign': 'center' as const,
-      'font-size': '12px',
-      'color': 'white',
-      'text-outline-color': '#666',
-      'text-outline-width': 2,
-      'width': '40px',
-      'height': '40px',
+      "background-color": "#666",
+      label: "data(label)",
+      "text-valign": "center" as const,
+      "text-halign": "center" as const,
+      "font-size": "12px",
+      color: "white",
+      "text-outline-color": "#666",
+      "text-outline-width": 2,
+      width: "40px",
+      height: "40px",
     },
   },
   {
     selector: 'node[type="drone"]',
     style: {
-      'background-color': '#3498db',
-      'shape': 'triangle',
+      "background-color": "#3498db",
+      shape: "triangle",
     },
   },
   {
     selector: 'node[type="server"]',
     style: {
-      'background-color': '#ffd700', // Yellow for communication server
-      'shape': 'rectangle' as const,
+      "background-color": "#ffd700", // Yellow for communication server
+      shape: "rectangle" as const,
     },
   },
   {
     selector: 'node[type="content-server"]',
     style: {
-      'background-color': '#ff8c00', // Orange for content server
-      'shape': 'rectangle' as const,
+      "background-color": "#ff8c00", // Orange for content server
+      shape: "rectangle" as const,
     },
   },
   {
     selector: 'node[type="communication-server"]',
     style: {
-      'background-color': '#ffd700', // Yellow for communication server
-      'shape': 'rectangle' as const,
+      "background-color": "#ffd700", // Yellow for communication server
+      shape: "rectangle" as const,
     },
   },
   {
     selector: 'node[type="client"]',
     style: {
-       'background-color': '#90ee90', // Dark green for chat client
-      'shape': 'ellipse' as const,
+      "background-color": "#90ee90", // Dark green for chat client
+      shape: "ellipse" as const,
     },
   },
   {
     selector: 'node[type="chat-client"]',
     style: {
-      'background-color': '#90ee90', // Dark green for chat client
-      'shape': 'ellipse' as const,
+      "background-color": "#90ee90", // Dark green for chat client
+      shape: "ellipse" as const,
     },
   },
   {
     selector: 'node[type="web-client"]',
     style: {
-      'background-color': '#009e1a', // Light green for web client
-      'shape': 'ellipse' as const,
+      "background-color": "#009e1a", // Light green for web client
+      shape: "ellipse" as const,
     },
   },
   {
-    selector: 'node.selected',
+    selector: "node.selected",
     style: {
-      'border-width': 3,
-      'border-color': '#ff6b35',
-      'border-style': 'solid' as const,
+      "border-width": 3,
+      "border-color": "#ff6b35",
+      "border-style": "solid" as const,
     },
   },
   {
-    selector: 'edge',
+    selector: "edge",
     style: {
-      'width': 2,
-      'line-color': '#ccc',
-      'curve-style': 'bezier' as const,
+      width: 2,
+      "line-color": "#ccc",
+      "curve-style": "bezier" as const,
     },
   },
-]
+];
 
-const CytoscapeContainer = forwardRef<CytoscapeContainerRef, CytoscapeContainerProps>(
-  ({ nodes, edges, onNodeCreate, onEdgeCreate, onNodeSelect }, ref) => {
-    const cyRef = useRef<HTMLDivElement>(null)
-    const cyInstance = useRef<Core | null>(null)
+const CytoscapeContainer = forwardRef<
+  CytoscapeContainerRef,
+  CytoscapeContainerProps
+>(({ nodes, edges, onNodeCreate, onEdgeCreate, onNodeSelect }, ref) => {
+  const cyRef = useRef<HTMLDivElement>(null);
+  const cyInstance = useRef<Core | null>(null);
 
-    // Function to remove edge from Cytoscape
-    const removeEdgeFromGraph = (fromNodeId: string, toNodeId: string) => {
-      const cy = cyInstance.current
-      if (!cy) return
+  // Function to remove edge from Cytoscape
+  const removeEdgeFromGraph = (fromNodeId: string, toNodeId: string) => {
+    const cy = cyInstance.current;
+    if (!cy) return;
 
-      // Find and remove edges between the two nodes (bidirectional)
-      const edgesToRemove = cy.edges().filter((edge) => {
-        const source = edge.source().id()
-        const target = edge.target().id()
-        return (source === fromNodeId && target === toNodeId) || 
-               (source === toNodeId && target === fromNodeId)
-      })
+    // Find and remove edges between the two nodes (bidirectional)
+    const edgesToRemove = cy.edges().filter((edge) => {
+      const source = edge.source().id();
+      const target = edge.target().id();
 
-      edgesToRemove.remove()
-      console.log(`Removed ${edgesToRemove.length} edge(s) between ${fromNodeId} and ${toNodeId}`)
+      return (
+        (source == fromNodeId && target == toNodeId) ||
+        (source == toNodeId && target == fromNodeId)
+      );
+    });
+
+    for (const edge of edgesToRemove) {
+      edge.remove();
     }
 
-    // Expose the edge removal function via ref
-    useImperativeHandle(ref, () => ({
-      removeEdge: removeEdgeFromGraph
-    }))
+    console.log(
+      `Removed ${edgesToRemove.length} edge(s) between ${fromNodeId} and ${toNodeId}`,
+    );
+  };
 
-    // Initialize Cytoscape once
+  const removeNodeFromGraph = (nodeId: string) => {
+    const cy = cyInstance.current;
+    if (!cy) return;
+
+    // Find and remove the node
+    const node = cy.getElementById(nodeId);
+    if (node.length > 0) {
+      node.remove();
+      console.log(`Node ${nodeId} removed`);
+    } else {
+      console.warn(`Node ${nodeId} not found`);
+    }
+  };
+
+  // Expose the edge removal function via ref
+  useImperativeHandle(ref, () => ({
+    removeEdge: removeEdgeFromGraph,
+    removeNode: removeNodeFromGraph,
+  }));
+
+  // Initialize Cytoscape once
   useEffect(() => {
-    if (!cyRef.current || cyInstance.current) return
-    
+    if (!cyRef.current || cyInstance.current) return;
+
     const cy = cytoscape({
       container: cyRef.current,
       elements: [],
       style: cytoscapeStyles,
-    })
-    
-    cyInstance.current = cy
-  }, [])
+    });
+
+    cyInstance.current = cy;
+  }, []);
 
   // Register events
-  useCytoscapeEvents(cyInstance.current!, { onNodeCreate, onEdgeCreate, onNodeSelect })
+  useCytoscapeEvents(cyInstance.current!, {
+    onNodeCreate,
+    onEdgeCreate,
+    onNodeSelect,
+  });
 
   // Update elements when props change
   useEffect(() => {
-    const cy = cyInstance.current
-    if (!cy) return
-    
+    const cy = cyInstance.current;
+    if (!cy) return;
+
     const layoutConfig = {
-      name: 'circle',
+      name: "circle",
       radius: 150,
       handleDisconnected: true,
       animate: true,
       avoidOverlap: true,
       infinite: false,
-      ready: (e: { cy: { fit: () => void; center: () => void; zoom: (level: number) => void } }) => {
-        e.cy.fit()
-        e.cy.center()
-      }
-    }
-    
-    cy.elements().remove()
-    cy.add([...nodes, ...edges])
-    cy.layout(layoutConfig).run()
-  }, [nodes, edges])
+      ready: (e: {
+        cy: {
+          fit: () => void;
+          center: () => void;
+          zoom: (level: number) => void;
+        };
+      }) => {
+        e.cy.fit();
+        e.cy.center();
+      },
+    };
 
-    return <div ref={cyRef} style={{ width: '100%', height: '100%' }} />
-  }
-)
+    cy.elements().remove();
+    cy.add([...nodes, ...edges]);
+    cy.layout(layoutConfig).run();
+  }, [nodes, edges]);
 
-CytoscapeContainer.displayName = 'CytoscapeContainer'
+  return <div ref={cyRef} style={{ width: "100%", height: "100%" }} />;
+});
 
-export default CytoscapeContainer
+CytoscapeContainer.displayName = "CytoscapeContainer";
+
+export default CytoscapeContainer;
