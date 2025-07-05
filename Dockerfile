@@ -17,15 +17,11 @@ WORKDIR /app
 
 COPY backend/Cargo.toml backend/Cargo.lock ./
 COPY backend/src ./src
-RUN cargo install cargo-watch
 RUN cargo build --release
 
 # Development stage with both Rust and Bun
 FROM rust:latest AS development
 WORKDIR /app
-
-# Install cargo-watch for hot reloading
-RUN cargo install cargo-watch
 
 # Create directories for volume mounts
 RUN mkdir -p /app/backend /app/frontend

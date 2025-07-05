@@ -1,86 +1,109 @@
-import React, { useState } from 'react'
-import { X, Trash2, AlertTriangle, Wifi } from 'lucide-react'
-import { setDronePacketDropRate, crashDrone } from './topology-visualizer/messageApi'
+import React, { useEffect, useState } from "react";
+import { X, Trash2, AlertTriangle, Wifi } from "lucide-react";
+import {
+  setDronePacketDropRate,
+  crashDrone,
+} from "./topology-visualizer/messageApi";
 
 interface NodeDetailsProps {
-  node: any
-  onClose: () => void
-  onRemoveEdge?: (fromNodeId: string, toNodeId: string) => void
+  node: any;
+  onClose: () => void;
+  onRemoveEdge?: (fromNodeId: string, toNodeId: string) => void;
 }
 
-const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemoveEdge }) => {
-  if (!node) return null
+type Neighbor = {
+  id: string;
+  label: string;
+  type: "drone" | "server" | "client";
+};
 
-  // Initial mock data for neighbors - replace with real data from your backend
-  const initialNeighbors = [
-    { id: '10', label: 'Server 10', type: 'server' },
-    { id: '3', label: 'Drone 3', type: 'drone' },
-    { id: '4', label: 'Client 4', type: 'client' },
-  ]
+const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
+  node,
+  onClose,
+  onRemoveEdge,
+}) => {
+  if (!node) return null;
 
   // State to manage neighbors list
-  const [neighbors, setNeighbors] = useState(initialNeighbors)
-  
+  const [neighbors, setNeighbors] = useState<Neighbor[]>([]);
+  const [label, setLabel] = useState(node.label || "Unknown Node");
+
+  useEffect(() => {
+    // Fetch topology data
+    fetch("/api/node/" + node.id)
+      .then((res) => res.json())
+      .then((data) => {
+        setNeighbors(data.neighbours || []);
+        setLabel(data.label || "Unknown Node");
+      })
+      .catch((err) => console.error("Error fetching topology:", err));
+  }, [node]);
+
   // Drone-specific state
-  const [packetDropRate, setPacketDropRate] = useState(0.0)
-  const [isDroneOnline, setIsDroneOnline] = useState(true)
+  const [packetDropRate, setPacketDropRate] = useState(0.0);
+  const [isDroneOnline, setIsDroneOnline] = useState(true);
 
   // Mock statistics - replace with real data
   const statistics = {
     packetsSent: 1247,
-    packetsDropped: 23
-  }
+    packetsDropped: 23,
+  };
 
   const handleRemoveNeighbor = (neighborId: string) => {
-    console.log(`Remove connection between ${node.id} and ${neighborId}`)
-    
+    console.log(`Remove connection between ${node.id} and ${neighborId}`);
+
     // Remove neighbor from UI immediately
-    setNeighbors(prevNeighbors => 
-      prevNeighbors.filter(neighbor => neighbor.id !== neighborId)
-    )
-    
+    setNeighbors((prevNeighbors) =>
+      prevNeighbors.filter((neighbor) => neighbor.id !== neighborId),
+    );
+
     // Remove edge from Cytoscape graph
-    onRemoveEdge?.(node.id, neighborId)
-    
-    // TODO: Implement actual edge removal logic here
-    // Example: await removeEdgeAPI(node.id, neighborId)
-  }
+    onRemoveEdge?.(node.id, neighborId);
+  };
 
   // Drone-specific handlers
   const handleSetPacketDropRate = async () => {
     try {
-      console.log(`Setting packet drop rate for drone ${node.id} to ${packetDropRate}`)
-      await setDronePacketDropRate(node.id, packetDropRate)
-      alert(`Packet drop rate set to ${(packetDropRate * 100).toFixed(1)}%`)
+      console.log(
+        `Setting packet drop rate for drone ${node.id} to ${packetDropRate}`,
+      );
+      await setDronePacketDropRate(node.id, packetDropRate);
+      alert(`Packet drop rate set to ${(packetDropRate * 100).toFixed(1)}%`);
     } catch (error) {
-      console.error('Failed to set packet drop rate:', error)
-      alert('Failed to set packet drop rate')
+      console.error("Failed to set packet drop rate:", error);
+      alert("Failed to set packet drop rate");
     }
-  }
+  };
 
   const handleCrashDrone = async () => {
-    if (!confirm(`Are you sure you want to crash drone ${node.label}? This action cannot be undone.`)) {
-      return
+    if (
+      !confirm(
+        `Are you sure you want to crash drone ${node.label}? This action cannot be undone.`,
+      )
+    ) {
+      return;
     }
-    
+
     try {
-      console.log(`Crashing drone ${node.id}`)
-      await crashDrone(node.id)
-      setIsDroneOnline(false)
-      
-      alert(`Drone ${node.label} has been crashed and disconnected from the network`)
+      console.log(`Crashing drone ${node.id}`);
+      await crashDrone(node.id);
+      setIsDroneOnline(false);
+
+      alert(
+        `Drone ${node.label} has been crashed and disconnected from the network`,
+      );
     } catch (error) {
-      console.error('Failed to crash drone:', error)
-      alert('Failed to crash drone')
+      console.error("Failed to crash drone:", error);
+      alert("Failed to crash drone");
     }
-  }
+  };
 
   return (
     <div className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 z-20 transform transition-transform duration-300 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {node.label}
+          {label}
         </h2>
         <button
           onClick={onClose}
@@ -95,7 +118,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
         {/* Neighbors Section */}
         <div>
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-            Connected Neighbors ({neighbors.length})
+            Connected Neighbors ({neighbors.length || 0})
           </h3>
           <div className="space-y-2">
             {neighbors.length > 0 ? (
@@ -105,11 +128,15 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
                   className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${
-                      neighbor.type === 'drone' ? 'bg-blue-500' :
-                      neighbor.type === 'server' ? 'bg-red-500' :
-                      'bg-green-500'
-                    }`} />
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        neighbor.type === "drone"
+                          ? "bg-blue-500"
+                          : neighbor.type === "server"
+                            ? "bg-red-500"
+                            : "bg-green-500"
+                      }`}
+                    />
                     <div>
                       <p className="text-sm font-medium text-gray-900 dark:text-white">
                         {neighbor.label}
@@ -162,7 +189,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
                 </span>
               </div>
             </div>
-            
+
             {/* Success Rate */}
             <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-center justify-between mb-2">
@@ -170,14 +197,19 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
                   Success Rate
                 </span>
                 <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                  {(((statistics.packetsSent - statistics.packetsDropped) / statistics.packetsSent) * 100).toFixed(1)}%
+                  {(
+                    ((statistics.packetsSent - statistics.packetsDropped) /
+                      statistics.packetsSent) *
+                    100
+                  ).toFixed(1)}
+                  %
                 </span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                <div 
+                <div
                   className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: `${((statistics.packetsSent - statistics.packetsDropped) / statistics.packetsSent) * 100}%` 
+                  style={{
+                    width: `${((statistics.packetsSent - statistics.packetsDropped) / statistics.packetsSent) * 100}%`,
                   }}
                 />
               </div>
@@ -186,7 +218,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
         </div>
 
         {/* Drone-specific Controls */}
-        {node.type === 'drone' && (
+        {node.type === "drone" && (
           <div>
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
               Drone Controls
@@ -205,7 +237,9 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
                     max="1"
                     step="0.01"
                     value={packetDropRate}
-                    onChange={(e) => setPacketDropRate(parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setPacketDropRate(parseFloat(e.target.value) || 0)
+                    }
                     className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="0.00"
                   />
@@ -230,7 +264,9 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
                       Crash Drone
                     </label>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {isDroneOnline ? 'Drone is currently online' : 'Drone is offline/crashed'}
+                      {isDroneOnline
+                        ? "Drone is currently online"
+                        : "Drone is offline/crashed"}
                     </p>
                   </div>
                   <button
@@ -238,11 +274,11 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
                     disabled={!isDroneOnline}
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                       isDroneOnline
-                        ? 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-500'
-                        : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                        ? "bg-red-500 hover:bg-red-600 text-white focus:ring-red-500"
+                        : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                     }`}
                   >
-                    {isDroneOnline ? 'Crash' : 'Crashed'}
+                    {isDroneOnline ? "Crash" : "Crashed"}
                   </button>
                 </div>
               </div>
@@ -251,7 +287,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({ node, onClose, onRemov
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default NodeDetailsSidebar
+export default NodeDetailsSidebar;
