@@ -32,6 +32,10 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
   const [label, setLabel] = useState("Unknown Node");
   const [node_type, setNodeType] = useState("Unknown Type");
   const [packet_drop_rate, setPacketDropRate] = useState(0.0);
+  const [statistics, setStatistics] = useState({
+    packetsSent: 0,
+    packetsDropped: 0,
+  });
 
   useEffect(() => {
     // Fetch topology data
@@ -43,9 +47,10 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
         setNodeType(data.type || "Unknown Type");
         if (data.type === "drone") {
           setPacketDropRate(data.packet_drop_rate || 0.0);
-          console.log(
-            `Drone ${node_id} packet drop rate: ${data.packet_drop_rate}`,
-          );
+          setStatistics({
+            packetsSent: data.pkg_sent || 0,
+            packetsDropped: data.pkg_drop || 0,
+          });
         }
       })
       .catch((err) => console.error("Error fetching topology:", err));
@@ -156,50 +161,107 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
 
         {/* Drone-specific Controls */}
         {node_type === "drone" && (
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-              Drone Controls
-            </h3>
-            <div className="space-y-3">
-              {/* Packet Drop Rate Control */}
-              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  <Wifi className="inline h-4 w-4 mr-2" />
-                  Set Packet Drop Rate
-                </label>
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="number"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={packet_drop_rate.toFixed(2)}
-                    onChange={(e) => {
-                      const v = parseFloat(e.target.value);
+          <>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                Drone Controls
+              </h3>
 
-                      if (isNaN(v) || v < 0 || v > 1) {
-                        alert("Please enter a valid rate between 0.0 and 1.0");
-                        setPacketDropRate(packet_drop_rate);
-                      } else {
-                        setPacketDropRate(v);
-                      }
-                    }}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="0.00"
-                  />
-                  <button
-                    onClick={handleSetPacketDropRate}
-                    className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    Set
-                  </button>
+              <div className="space-y-3">
+                {/* Packet Drop Rate Control */}
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Wifi className="inline h-4 w-4 mr-2" />
+                    Set Packet Drop Rate
+                  </label>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={packet_drop_rate.toFixed(2)}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value);
+
+                        if (isNaN(v) || v < 0 || v > 1) {
+                          alert(
+                            "Please enter a valid rate between 0.0 and 1.0",
+                          );
+                          setPacketDropRate(packet_drop_rate);
+                        } else {
+                          setPacketDropRate(v);
+                        }
+                      }}
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="0.00"
+                    />
+                    <button
+                      onClick={handleSetPacketDropRate}
+                      className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                      Set
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Range: 0.0 (0%) to 1.0 (100%)
+                  </p>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Range: 0.0 (0%) to 1.0 (100%)
-                </p>
               </div>
             </div>
-          </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                Statistics
+              </h3>
+              <div className="space-y-3">
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Packets Sent
+                    </span>
+                    <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                      {statistics.packetsSent.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Packets Dropped
+                    </span>
+                    <span className="text-lg font-bold text-red-600 dark:text-red-400">
+                      {statistics.packetsDropped.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Success Rate */}
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Success Rate
+                    </span>
+                    <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                      {(
+                        ((statistics.packetsSent - statistics.packetsDropped) /
+                          statistics.packetsSent) *
+                        100
+                      ).toFixed(1)}
+                      %
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                    <div
+                      className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${((statistics.packetsSent - statistics.packetsDropped) / statistics.packetsSent) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Crash Drone Button */}
