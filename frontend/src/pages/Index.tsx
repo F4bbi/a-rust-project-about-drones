@@ -25,6 +25,7 @@ function Index() {
   const [isConfigPopupOpen, setIsConfigPopupOpen] = useState(false);
   const [isLogsSidebarOpen, setIsLogsSidebarOpen] = useState(false);
   const topologyRef = useRef<TopologyVisualizerRef>(null);
+  const [trigger, setTrigger] = useState(0);
 
   useEffect(() => {
     // Fetch topology data
@@ -37,7 +38,7 @@ function Index() {
         });
       })
       .catch((err) => console.error("Error fetching topology:", err));
-  }, []);
+  }, [trigger]);
 
   const handleNodeSelect = (nodeData: any) => {
     setSelectedNode(nodeData);
@@ -93,11 +94,15 @@ function Index() {
     setIsConfigPopupOpen(false);
   };
 
-  const handleSelectConfig = (configId: string) => {
+  const handleSelectConfig = (configId: number) => {
     console.log(`Selected configuration: ${configId}`);
-    // TODO: Implement configuration change logic
-    // Example: await applyConfigurationAPI(configId)
-    // This could reload the topology with the new configuration
+    fetch("/api/configurations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: configId }),
+    }).then(() => {
+      setTrigger((prev) => prev + 1);
+    });
   };
 
   const handleOpenLogs = () => {
