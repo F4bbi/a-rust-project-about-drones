@@ -5,7 +5,6 @@ import TopologyVisualizer, {
 } from "@/components/custom/topology-visualizer/TopologyVisualizer";
 import ThemeToggleButton from "@/components/ui/theme-toggle";
 import ToolBar from "@/components/custom/toolbar/Toolbar";
-import ControlBar from "@/components/custom/control-bar/ControlBar";
 import ConfigButton from "@/components/custom/config-button/ConfigButton";
 import ConfigPopup from "@/components/custom/config-button/ConfigPopup";
 import LogsButton from "@/components/custom/logs-button/LogsButton";
@@ -74,18 +73,6 @@ function Index() {
     setSelectedNode(null);
   };
 
-  const handlePlay = () => {
-    console.log("Starting simulation...");
-    // TODO: Implement simulation start logic
-    // Example: await startSimulationAPI()
-  };
-
-  const handleStop = () => {
-    console.log("Stopping simulation...");
-    // TODO: Implement simulation stop logic
-    // Example: await stopSimulationAPI()
-  };
-
   const handleOpenConfig = () => {
     setIsConfigPopupOpen(true);
   };
@@ -140,9 +127,6 @@ function Index() {
           onNodeSelect={handleNodeSelect}
         />
       </div>
-
-      {/* Control bar at the bottom */}
-      <ControlBar onPlay={handlePlay} onStop={handleStop} />
 
       {/* Configuration button at bottom left */}
       <ConfigButton onClick={handleOpenConfig} />
