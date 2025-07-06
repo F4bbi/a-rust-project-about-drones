@@ -116,8 +116,8 @@ const messageTypes: {
           placeholder: "Enter chat name",
         },
         {
-          name: "Public",
-          id: "public",
+          name: "Private",
+          id: "private",
           type: "checkbox",
           mandatory: false,
         },
