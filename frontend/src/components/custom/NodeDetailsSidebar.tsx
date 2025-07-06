@@ -12,10 +12,188 @@ interface NodeDetailsProps {
   onNodeCrash: (nodeId: string) => void;
 }
 
+type AdditionalFormInfo = {
+  name: string;
+  id: string;
+  type: "text" | "number" | "checkbox";
+  mandatory: boolean;
+  placeholder?: string; // Optional placeholder for text inputs
+};
+
 type Neighbor = {
   id: string;
   label: string;
   type: "drone" | "server" | "client";
+};
+
+const messageTypes: {
+  common: {
+    name: string;
+    endpoint: string;
+    additionalFormInfo: AdditionalFormInfo[];
+  }[];
+  chat: {
+    name: string;
+    endpoint: string;
+    additionalFormInfo: AdditionalFormInfo[];
+  }[];
+  web: {
+    name: string;
+    endpoint: string;
+    additionalFormInfo: AdditionalFormInfo[];
+  }[];
+} = {
+  common: [
+    {
+      name: "Request Server Type",
+      endpoint: "/api/messages/server-type",
+      additionalFormInfo: [],
+    },
+  ],
+  chat: [
+    {
+      name: "Join",
+      endpoint: "/api/messages/join",
+      additionalFormInfo: [
+        {
+          name: "Chat ID",
+          id: "id",
+          type: "number",
+          mandatory: true,
+          placeholder: "Enter chat ID",
+        },
+        {
+          name: "Password",
+          id: "password",
+          type: "text",
+          mandatory: false,
+          placeholder: "Enter chat password (if any)",
+        },
+      ],
+    },
+    {
+      name: "Leave",
+      endpoint: "/api/messages/leave",
+      additionalFormInfo: [
+        {
+          name: "Chat ID",
+          id: "id",
+          type: "number",
+          mandatory: true,
+          placeholder: "Enter chat ID",
+        },
+      ],
+    },
+    {
+      name: "Send Message",
+      endpoint: "/api/messages/send-message",
+      additionalFormInfo: [
+        {
+          name: "Chat ID",
+          id: "id",
+          type: "number",
+          mandatory: true,
+          placeholder: "Enter chat ID",
+        },
+        {
+          name: "Message",
+          id: "message",
+          type: "text",
+          mandatory: true,
+          placeholder: "Enter your message",
+        },
+      ],
+    },
+    {
+      name: "Create",
+      endpoint: "/api/messages/create",
+      additionalFormInfo: [
+        {
+          name: "Chat Name",
+          id: "name",
+          type: "text",
+          mandatory: true,
+          placeholder: "Enter chat name",
+        },
+        {
+          name: "Public",
+          id: "public",
+          type: "checkbox",
+          mandatory: true,
+        },
+        {
+          name: "Password",
+          id: "password",
+          type: "text",
+          mandatory: false,
+          placeholder: "Enter chat password (optional)",
+        },
+      ],
+    },
+    {
+      name: "Delete",
+      endpoint: "/api/messages/delete",
+      additionalFormInfo: [
+        {
+          name: "Chat ID",
+          id: "id",
+          type: "number",
+          mandatory: true,
+          placeholder: "Enter chat ID to delete",
+        },
+      ],
+    },
+    {
+      name: "Get Chats",
+      endpoint: "/api/messages/get-chats",
+      additionalFormInfo: [],
+    },
+    {
+      name: "Get Messages",
+      endpoint: "/api/messages/get-messages",
+      additionalFormInfo: [
+        {
+          name: "Chat ID",
+          id: "chat_id",
+          type: "number",
+          mandatory: true,
+          placeholder: "Enter chat ID to fetch messages",
+        },
+      ],
+    },
+  ],
+  web: [
+    {
+      name: "List Public Files",
+      endpoint: "/api/messages/list-public-files",
+      additionalFormInfo: [],
+    },
+    {
+      name: "Get Public File",
+      endpoint: "/api/messages/get-public-file",
+      additionalFormInfo: [],
+    },
+    {
+      name: "Write Public File",
+      endpoint: "/api/messages/write-public-file",
+      additionalFormInfo: [],
+    },
+    {
+      name: "List Private Files",
+      endpoint: "/api/messages/list-private-files",
+      additionalFormInfo: [],
+    },
+    {
+      name: "Get Private File",
+      endpoint: "/api/messages/get-private-file",
+      additionalFormInfo: [],
+    },
+    {
+      name: "Write Private File",
+      endpoint: "/api/messages/write-private-file",
+      additionalFormInfo: [],
+    },
+  ],
 };
 
 const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
@@ -48,11 +226,22 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
   const [neighbors, setNeighbors] = useState<Neighbor[]>([]);
   const [label, setLabel] = useState("Unknown Node");
   const [node_type, setNodeType] = useState("Unknown Type");
+  const [node_sub_type, setNodeSubType] = useState("Unknown Type");
   const [packet_drop_rate, setPacketDropRate] = useState(0.0);
   const [statistics, setStatistics] = useState({
     packetsSent: 0,
     packetsDropped: 0,
   });
+
+  const [targetId, setTargetId] = useState<string | undefined>(undefined);
+  const [endpoint, setEndpoint] = useState<string>("/api/messages/server-type");
+  const [data, setData] = useState<any | undefined>({});
+
+  const [additionalFormInfo, setAdditionalFormInfo] = useState<
+    AdditionalFormInfo[]
+  >([]);
+
+  useEffect(() => {}, [endpoint]);
 
   useEffect(() => {
     // Fetch topology data
@@ -61,6 +250,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
       .then((data) => {
         setNeighbors(data.neighbours || []);
         setLabel(data.label || "Unknown Node");
+        setNodeSubType(data.subtype || "Unknown Sub Type");
         setNodeType(data.type || "Unknown Type");
         if (data.type === "drone") {
           setPacketDropRate(data.packet_drop_rate || 0.0);
@@ -308,6 +498,121 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
               Client Controls
             </h3>
+            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              {/* Form to send message */}
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Send a Message
+                </label>
+                <form
+                  className="space-y-3"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    fetch(endpoint || "", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        to_id: parseInt(targetId || "-1") || -1,
+                        from_id: parseInt(node_id),
+                        ...data,
+                      }),
+                    })
+                      .then((response) => {
+                        if (!response.ok) {
+                          console.error(
+                            "Failed to send message:",
+                            response.statusText,
+                          );
+                        } else {
+                          console.log("Message sent successfully");
+                        }
+                      })
+                      .catch((error) => {
+                        console.error("Error sending message:", error);
+                      });
+                  }}
+                >
+                  <input
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Id of server"
+                    type="number"
+                    onChange={(e) => {
+                      setTargetId(e.target.value);
+                    }}
+                    required
+                  />
+                  {/* drop menue with options */}
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    onChange={(e) => {
+                      setEndpoint(e.target.value);
+                      setData({});
+                      const selectedType = (
+                        node_sub_type === "web"
+                          ? messageTypes.web
+                          : messageTypes.chat
+                      ).find((type) => type.endpoint === e.target.value);
+                      if (selectedType) {
+                        setAdditionalFormInfo(
+                          selectedType.additionalFormInfo || [],
+                        );
+                      } else {
+                        setAdditionalFormInfo([]);
+                      }
+                    }}
+                  >
+                    {messageTypes.common.map((type) => (
+                      <option key={type.endpoint} value={type.endpoint}>
+                        {type.name}
+                      </option>
+                    ))}
+                    {node_sub_type === "web"
+                      ? messageTypes.web.map((type) => (
+                          <option key={type.endpoint} value={type.endpoint}>
+                            {type.name}
+                          </option>
+                        ))
+                      : messageTypes.chat.map((type) => (
+                          <option key={type.endpoint} value={type.endpoint}>
+                            {type.name}
+                          </option>
+                        ))}
+                  </select>
+                  {additionalFormInfo.map((info) => (
+                    <div key={info.name} className="space-y-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {info.name}
+                      </label>
+                      <input
+                        type={info.type === "checkbox" ? "checkbox" : info.type}
+                        className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          info.type === "checkbox" ? "cursor-pointer" : ""
+                        }`}
+                        placeholder={info.placeholder || ""}
+                        required={info.mandatory}
+                        onChange={(e) => {
+                          setData((prevData: any) => ({
+                            ...prevData,
+                            [info.name]:
+                              info.type === "checkbox"
+                                ? e.target.checked
+                                : e.target.value,
+                          }));
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <button
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    type="submit"
+                  >
+                    Send
+                  </button>
+                </form>
+              </div>
+            </div>
             <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <div className="flex items-center justify-between">
