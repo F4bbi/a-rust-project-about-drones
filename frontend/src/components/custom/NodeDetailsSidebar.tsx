@@ -279,7 +279,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
 
   const [trigger, setTrigger] = useState(0);
 
-  //Update trigger every 0.5 seconds to force re-render
+  // Update trigger every 0.5 seconds to force re-render
   useEffect(() => {
     const interval = setInterval(() => {
       setTrigger((prev) => prev + 1);
@@ -287,13 +287,19 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
     return () => clearInterval(interval);
   }, []);
 
+  const [version, setVersion] = useState(0);
+
   useEffect(() => {
     if (node_type === "client") {
       fetch("/api/node/" + node_id + "/messages")
         .then((res) => res.json())
         .then((data) => {
+          console.log(version, data.version);
+          if (version == data.version) return;
+          console.log("Updating messages for node:", node_id);
+          setVersion(data.version);
           setMessages(
-            data.map((msg: any) => ({
+            data.messages.map((msg: any) => ({
               from: msg.from,
               message: msg.message,
               id: msg.id || Math.random().toString(36).substr(2, 9),
