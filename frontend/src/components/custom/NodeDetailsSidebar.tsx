@@ -27,6 +27,23 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
   if (!node_id_or_undefined) return null;
   const node_id = node_id_or_undefined || "";
 
+  const messages = [
+    {
+      id: "1",
+      content: "Hello, this is a test message.",
+      timestamp: new Date().toISOString(),
+      sender: "Drone A",
+      receiver: "Drone B",
+    },
+    {
+      id: "2",
+      content: "This is another message.",
+      timestamp: new Date().toISOString(),
+      sender: "Drone B",
+      receiver: "Drone A",
+    },
+  ];
+
   // State to manage neighbors list
   const [neighbors, setNeighbors] = useState<Neighbor[]>([]);
   const [label, setLabel] = useState("Unknown Node");
@@ -284,6 +301,47 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Client Only */}
+        {node_type === "client" && (
+          <>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+              Client Controls
+            </h3>
+            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Recived Messages
+                    </label>
+                  </div>
+                </div>
+                <div className="mt-2 space-y-2">
+                  {messages.length > 0 ? (
+                    messages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
+                      >
+                        <p className="text-sm text-gray-900 dark:text-white">
+                          <strong>{msg.sender}:</strong> {msg.content}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {new Date(msg.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                      No messages received
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

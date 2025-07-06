@@ -143,6 +143,24 @@ export function useCytoscapeEvents(
             currentSpecificNode.name,
           );
 
+          let nodeSubType = "drone";
+          if (
+            currentSpecificNode.name
+              .toLocaleLowerCase()
+              .includes("communication")
+          )
+            nodeSubType = "communication";
+          else if (
+            currentSpecificNode.name.toLocaleLowerCase().includes("content")
+          )
+            nodeSubType = "content";
+          else if (currentSpecificNode.name.toLocaleLowerCase().includes("web"))
+            nodeSubType = "web";
+          else if (
+            currentSpecificNode.name.toLocaleLowerCase().includes("chat")
+          )
+            nodeSubType = "chat";
+
           // Add node to Cytoscape with the ID from the backend
           const nodeId = result.id.toString();
           cy.add({
@@ -151,6 +169,7 @@ export function useCytoscapeEvents(
               id: nodeId,
               label: `${currentSpecificNode.name} ${result.id}`,
               type: currentNodeType,
+              subtype: nodeSubType,
             },
             position,
           });
@@ -160,6 +179,7 @@ export function useCytoscapeEvents(
             id: result.id,
             type: currentNodeType,
             name: currentSpecificNode.name,
+            subtype: nodeSubType,
             position,
           });
 

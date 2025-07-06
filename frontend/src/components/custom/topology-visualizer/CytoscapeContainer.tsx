@@ -1,5 +1,5 @@
 import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
-import cytoscape, { type Core } from "cytoscape";
+import cytoscape, { type Core, type StylesheetJson } from "cytoscape";
 import { useCytoscapeEvents } from "./useCytoscapeEvents";
 import type { TopologyVisualizerProps } from "./types";
 
@@ -13,7 +13,7 @@ export interface CytoscapeContainerRef {
   removeNode: (nodeId: string) => void;
 }
 
-const cytoscapeStyles = [
+const cytoscapeStyles: StylesheetJson | Promise<StylesheetJson> = [
   {
     selector: "node",
     style: {
@@ -23,7 +23,7 @@ const cytoscapeStyles = [
       "text-halign": "center" as const,
       "font-size": "12px",
       color: "white",
-      "text-outline-color": "#666",
+      "text-outline-color": "#3d3c3c",
       "text-outline-width": 2,
       width: "40px",
       height: "40px",
@@ -32,50 +32,56 @@ const cytoscapeStyles = [
   {
     selector: 'node[type="drone"]',
     style: {
-      "background-color": "#3498db",
-      shape: "triangle",
+      "background-image": "url(/drone.png)",
+      "background-width": "40px",
+      "background-height": "40px",
+      "background-clip": "none",
+      "border-width": 0,
+      "background-opacity": 0,
     },
   },
   {
-    selector: 'node[type="server"]',
+    selector: 'node[subtype="content"]',
     style: {
-      "background-color": "#ffd700", // Yellow for communication server
-      shape: "rectangle" as const,
+      "background-image": "url(/content_server.png)",
+      "background-width": "40px",
+      "background-height": "40px",
+      "background-clip": "none",
+      "border-width": 0,
+      "background-opacity": 0,
     },
   },
   {
-    selector: 'node[type="content-server"]',
+    selector: 'node[subtype="communication"]',
     style: {
-      "background-color": "#ff8c00", // Orange for content server
-      shape: "rectangle" as const,
+      "background-image": "url(/communication_server.png)",
+      "background-width": "40px",
+      "background-height": "40px",
+      "background-clip": "none",
+      "border-width": 0,
+      "background-opacity": 0,
     },
   },
   {
-    selector: 'node[type="communication-server"]',
+    selector: 'node[subtype="chat"]',
     style: {
-      "background-color": "#ffd700", // Yellow for communication server
-      shape: "rectangle" as const,
+      "background-image": "url(/chat_client.png)",
+      "background-width": "40px",
+      "background-height": "40px",
+      "background-clip": "none",
+      "border-width": 0,
+      "background-opacity": 0,
     },
   },
   {
-    selector: 'node[type="client"]',
+    selector: 'node[subtype="web"]',
     style: {
-      "background-color": "#90ee90", // Dark green for chat client
-      shape: "ellipse" as const,
-    },
-  },
-  {
-    selector: 'node[type="chat-client"]',
-    style: {
-      "background-color": "#90ee90", // Dark green for chat client
-      shape: "ellipse" as const,
-    },
-  },
-  {
-    selector: 'node[type="web-client"]',
-    style: {
-      "background-color": "#009e1a", // Light green for web client
-      shape: "ellipse" as const,
+      "background-image": "url(/web_client.png)",
+      "background-width": "40px",
+      "background-height": "40px",
+      "background-clip": "none",
+      "border-width": 0,
+      "background-opacity": 0,
     },
   },
   {
