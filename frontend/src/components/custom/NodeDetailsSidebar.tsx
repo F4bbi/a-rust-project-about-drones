@@ -119,7 +119,7 @@ const messageTypes: {
           name: "Public",
           id: "public",
           type: "checkbox",
-          mandatory: true,
+          mandatory: false,
         },
         {
           name: "Password",
@@ -171,12 +171,35 @@ const messageTypes: {
     {
       name: "Get Public File",
       endpoint: "/api/messages/get-public-file",
-      additionalFormInfo: [],
+      additionalFormInfo: [
+        {
+          name: "File Name",
+          id: "file_name",
+          type: "text",
+          mandatory: true,
+          placeholder: "Name of the file to retrieve",
+        },
+      ],
     },
     {
       name: "Write Public File",
       endpoint: "/api/messages/write-public-file",
-      additionalFormInfo: [],
+      additionalFormInfo: [
+        {
+          name: "File Name",
+          id: "file_name",
+          type: "text",
+          mandatory: true,
+          placeholder: "Name of the file to write",
+        },
+        {
+          name: "Content",
+          id: "content",
+          type: "text",
+          mandatory: true,
+          placeholder: "Content of the file to write",
+        },
+      ],
     },
     {
       name: "List Private Files",
@@ -186,12 +209,35 @@ const messageTypes: {
     {
       name: "Get Private File",
       endpoint: "/api/messages/get-private-file",
-      additionalFormInfo: [],
+      additionalFormInfo: [
+        {
+          name: "File Name",
+          id: "file_name",
+          type: "text",
+          mandatory: true,
+          placeholder: "Name of the file to retrieve",
+        },
+      ],
     },
     {
       name: "Write Private File",
       endpoint: "/api/messages/write-private-file",
-      additionalFormInfo: [],
+      additionalFormInfo: [
+        {
+          name: "File Name",
+          id: "file_name",
+          type: "text",
+          mandatory: true,
+          placeholder: "Name of the file to write",
+        },
+        {
+          name: "Content",
+          id: "content",
+          type: "text",
+          mandatory: true,
+          placeholder: "Content of the file to write",
+        },
+      ],
     },
   ],
 };
@@ -575,7 +621,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     onChange={(e) => {
                       setEndpoint(e.target.value);
-                      setData({});
+                      // setData({});
                       const selectedType = (
                         node_sub_type === "web"
                           ? messageTypes.web
