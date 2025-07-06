@@ -1,7 +1,12 @@
 services:
   app:
     build: .
+    container_name: simulation-controller
     ports:
       - "3000:3000"
-    environment:
-      - RUST_LOG=info
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 2s
+      timeout: 1s
+      retries: 3
