@@ -1,27 +1,33 @@
-import React from 'react'
-import { Drone, Laptop, Database } from 'lucide-react'
-import type { NodeType } from '@/stores/toolbarStore'
+import React from "react";
+import { Drone, Laptop, Database } from "lucide-react";
+import type { NodeType } from "@/stores/toolbarStore";
 
 interface SpecificNodeButtonProps {
-  node: { name: string; type: NodeType; image: string }
-  nodeType: NodeType
-  isSelected: boolean
-  onClick: () => void
+  node: { name: string; type: NodeType; image: string };
+  nodeType: NodeType;
+  isSelected: boolean;
+  onClick: () => void;
 }
 
-const SpecificNodeButton: React.FC<SpecificNodeButtonProps> = ({ node, nodeType, isSelected, onClick }) => {
+const SpecificNodeButton: React.FC<SpecificNodeButtonProps> = ({
+  node,
+  nodeType,
+  isSelected,
+  onClick,
+}) => {
   // Get the appropriate icon based on node type
-  const IconComponent = nodeType === 'drone' ? Drone : 
-                        nodeType === 'client' ? Laptop : Database
+  const IconComponent =
+    nodeType === "drone" ? Drone : nodeType === "client" ? Laptop : Database;
 
   return (
     <button
       onClick={onClick}
       className={`
         relative p-3 rounded-lg transition-all duration-200 group
-        ${isSelected 
-          ? 'bg-green-500 text-white shadow-md' 
-          : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
+        ${
+          isSelected
+            ? "bg-green-500 text-white shadow-md"
+            : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
         }
       `}
       title={node.name}
@@ -34,7 +40,7 @@ const SpecificNodeButton: React.FC<SpecificNodeButtonProps> = ({ node, nodeType,
         </div>
       </div>
     </button>
-  )
-}
+  );
+};
 
-export default SpecificNodeButton
+export default SpecificNodeButton;

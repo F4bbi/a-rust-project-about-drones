@@ -1,22 +1,24 @@
-import { useState, useEffect } from 'react'
-import { Sun, Moon } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { Sun, Moon } from "lucide-react";
 
 const ThemeToggleButton = () => {
   const [isDark, setIsDark] = useState(() =>
-    typeof window !== 'undefined' ? document.documentElement.classList.contains('dark') : false
+    typeof window !== "undefined"
+      ? document.documentElement.classList.contains("dark")
+      : false,
   );
 
   useEffect(() => {
     if (isDark) {
-      document.documentElement.classList.add('dark')
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.remove("dark");
     }
-  }, [isDark])
+  }, [isDark]);
 
   const toggleTheme = () => {
-    setIsDark((prev) => !prev)
-  }
+    setIsDark((prev) => !prev);
+  };
 
   return (
     <div className="fixed top-0 right-0 z-10 pr-5 pt-5">
@@ -32,7 +34,7 @@ const ThemeToggleButton = () => {
         )}
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default ThemeToggleButton
+export default ThemeToggleButton;

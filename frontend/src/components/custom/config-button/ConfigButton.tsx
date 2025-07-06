@@ -1,8 +1,8 @@
-import React from 'react'
-import { Settings } from 'lucide-react'
+import React from "react";
+import { Settings } from "lucide-react";
 
 interface ConfigButtonProps {
-  onClick: () => void
+  onClick: () => void;
 }
 
 const ConfigButton: React.FC<ConfigButtonProps> = ({ onClick }) => {
@@ -16,7 +16,7 @@ const ConfigButton: React.FC<ConfigButtonProps> = ({ onClick }) => {
         <Settings className="w-6 h-6" />
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default ConfigButton
+export default ConfigButton;
