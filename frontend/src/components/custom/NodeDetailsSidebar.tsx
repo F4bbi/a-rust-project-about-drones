@@ -154,7 +154,7 @@ const messageTypes: {
       additionalFormInfo: [
         {
           name: "Chat ID",
-          id: "chat_id",
+          id: "id",
           type: "number",
           mandatory: true,
           placeholder: "Enter chat ID to fetch messages",
@@ -196,6 +196,13 @@ const messageTypes: {
   ],
 };
 
+type Message = {
+  from: number;
+  message: string;
+  id: number;
+  timestamp: Date;
+};
+
 const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
   node_id_or_undefined,
   onClose,
@@ -205,24 +212,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
   if (!node_id_or_undefined) return null;
   const node_id = node_id_or_undefined || "";
 
-  const messages = [
-    {
-      id: "1",
-      content: "Hello, this is a test message.",
-      timestamp: new Date().toISOString(),
-      sender: "Drone A",
-      receiver: "Drone B",
-    },
-    {
-      id: "2",
-      content: "This is another message.",
-      timestamp: new Date().toISOString(),
-      sender: "Drone B",
-      receiver: "Drone A",
-    },
-  ];
-
-  // State to manage neighbors list
+  const [messages, setMessages] = useState<Message[]>([]);
   const [neighbors, setNeighbors] = useState<Neighbor[]>([]);
   const [label, setLabel] = useState("Unknown Node");
   const [node_type, setNodeType] = useState("Unknown Type");
@@ -241,7 +231,39 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
     AdditionalFormInfo[]
   >([]);
 
-  useEffect(() => {}, [endpoint]);
+  const [trigger, setTrigger] = useState(0);
+
+  //Update trigger every 0.5 seconds to force re-render
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTrigger((prev) => prev + 1);
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (node_type === "client") {
+      fetch("/api/node/" + node_id + "/messages")
+        .then((res) => res.json())
+        .then((data) => {
+          setMessages(
+            data.map((msg: any) => ({
+              from: msg.from,
+              message: msg.message,
+              id: msg.id || Math.random().toString(36).substr(2, 9),
+              // for timestamp, this is the format 2025-07-06 17:40:36.438755886 UTC
+              timestamp: new Date(
+                msg.timestamp
+                  .replace(" ", "T")
+                  .replace(" UTC", "")
+                  .slice(0, 26) + "Z",
+              ),
+            })) || [],
+          );
+        })
+        .catch((err) => console.error("Error fetching messages:", err));
+    }
+  }, [node_id, trigger]);
 
   useEffect(() => {
     // Fetch topology data
@@ -508,6 +530,11 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
                   className="space-y-3"
                   onSubmit={(e) => {
                     e.preventDefault();
+                    console.log("Sending message:", {
+                      to_id: targetId,
+                      from_id: node_id,
+                      ...data,
+                    });
                     fetch(endpoint || "", {
                       method: "POST",
                       headers: {
@@ -595,10 +622,12 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
                         onChange={(e) => {
                           setData((prevData: any) => ({
                             ...prevData,
-                            [info.name]:
+                            [info.id]:
                               info.type === "checkbox"
                                 ? e.target.checked
-                                : e.target.value,
+                                : (info.type === "number"
+                                    ? parseInt(e.target.value)
+                                    : e.target.value) || "",
                           }));
                         }}
                       />
@@ -624,19 +653,27 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
                 </div>
                 <div className="mt-2 space-y-2">
                   {messages.length > 0 ? (
-                    messages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
-                      >
-                        <p className="text-sm text-gray-900 dark:text-white">
-                          <strong>{msg.sender}:</strong> {msg.content}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(msg.timestamp).toLocaleString()}
-                        </p>
-                      </div>
-                    ))
+                    // sort message by timestamp descending
+
+                    messages
+                      .sort(
+                        (a, b) =>
+                          new Date(b.timestamp).getTime() -
+                          new Date(a.timestamp).getTime(),
+                      )
+                      .map((msg) => (
+                        <div
+                          key={msg.id}
+                          className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
+                        >
+                          <p className="text-sm text-gray-900 dark:text-white">
+                            <strong>Server {msg.from}:</strong> {msg.message}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(msg.timestamp).toLocaleString()}
+                          </p>
+                        </div>
+                      ))
                   ) : (
                     <p className="text-sm text-gray-500 dark:text-gray-400 italic">
                       No messages received
