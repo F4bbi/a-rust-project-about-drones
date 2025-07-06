@@ -162,6 +162,8 @@ const CytoscapeContainer = forwardRef<
       container: cyRef.current,
       elements: [],
       style: cytoscapeStyles,
+      minZoom: 0.5,
+      maxZoom: 2,
     });
 
     cyInstance.current = cy;
@@ -183,7 +185,7 @@ const CytoscapeContainer = forwardRef<
       name: "circle",
       radius: 150,
       handleDisconnected: true,
-      animate: true,
+      animate: false,
       avoidOverlap: true,
       infinite: false,
       ready: (e: {
