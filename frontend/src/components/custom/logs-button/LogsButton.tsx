@@ -1,8 +1,8 @@
-import React from 'react'
-import { FileText } from 'lucide-react'
+import { FileText } from "lucide-react";
+import React from "react";
 
 interface LogsButtonProps {
-  onClick: () => void
+  onClick: () => void;
 }
 
 const LogsButton: React.FC<LogsButtonProps> = ({ onClick }) => {
@@ -16,7 +16,7 @@ const LogsButton: React.FC<LogsButtonProps> = ({ onClick }) => {
         <FileText className="w-6 h-6" />
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default LogsButton
+export default LogsButton;

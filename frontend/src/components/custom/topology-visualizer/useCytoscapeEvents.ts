@@ -253,7 +253,7 @@ export function useCytoscapeEvents(
             group: "nodes",
             data: {
               id: nodeId,
-              label: `${capitalizedType}${result.id}`,
+              label: `${capitalizedType} ${result.id}`,
               type: currentNodeType,
               subtype: nodeSubType,
             },
