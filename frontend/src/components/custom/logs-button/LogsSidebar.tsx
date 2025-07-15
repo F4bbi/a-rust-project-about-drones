@@ -153,7 +153,12 @@ const LogsSidebar: React.FC<LogsSidebarProps> = ({ isOpen, onClose }) => {
                   className="text-sm text-gray-800 dark:text-gray-300"
                 >
                   <span
-                    className={`font-bold ${log.level === "ERROR" ? "text-red-500" : ""}`}
+                    className={`font-bold ${
+                      log.level === "DEBUG" ? "text-blue-500" :
+                      log.level === "INFO" ? "text-green-500" :
+                      log.level === "WARN" ? "text-yellow-500" :
+                      log.level === "ERROR" ? "text-red-500" : ""
+                    }`}
                   >
                     {log.level}:
                   </span>{" "}

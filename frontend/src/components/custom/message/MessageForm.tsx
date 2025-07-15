@@ -266,7 +266,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
               <input
                 id="isPublic"
                 type="checkbox"
-                checked={formData.isPublic || false}
+                checked={formData.isPublic ?? false}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   updateFormData("isPublic", e.target.checked)
                 }

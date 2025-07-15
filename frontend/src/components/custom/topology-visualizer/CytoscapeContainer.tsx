@@ -17,71 +17,60 @@ const cytoscapeStyles: StylesheetJson | Promise<StylesheetJson> = [
   {
     selector: "node",
     style: {
-      "background-color": "#666",
-      label: "data(label)",
-      "text-valign": "center" as const,
-      "text-halign": "center" as const,
-      "font-size": "12px",
-      color: "white",
-      "text-outline-color": "#3d3c3c",
-      "text-outline-width": 2,
+      // Layout properties
       width: "40px",
       height: "40px",
+      
+      // Background properties
+      "background-color": "#666",
+      "background-width": "40px",
+      "background-height": "40px",
+      "background-clip": "none",
+      "background-opacity": 0,
+      
+      // Border properties
+      "border-width": 0,
+      
+      // Text properties
+      label: "data(label)",
+      "font-size": "12px",
+      color: "white",
+      "text-valign": "bottom" as const,
+      "text-halign": "center" as const,
+      "text-margin-y": 2,
+      "text-outline-color": "#3d3c3c",
+      "text-outline-width": 2,
+      "text-wrap": "wrap" as const,
     },
   },
   {
     selector: 'node[type="drone"]',
     style: {
       "background-image": "url(/drone.png)",
-      "background-width": "40px",
-      "background-height": "40px",
-      "background-clip": "none",
-      "border-width": 0,
-      "background-opacity": 0,
     },
   },
   {
     selector: 'node[subtype="content"]',
     style: {
       "background-image": "url(/content_server.png)",
-      "background-width": "40px",
-      "background-height": "40px",
-      "background-clip": "none",
-      "border-width": 0,
-      "background-opacity": 0,
     },
   },
   {
     selector: 'node[subtype="communication"]',
     style: {
       "background-image": "url(/communication_server.png)",
-      "background-width": "40px",
-      "background-height": "40px",
-      "background-clip": "none",
-      "border-width": 0,
-      "background-opacity": 0,
     },
   },
   {
     selector: 'node[subtype="chat"]',
     style: {
       "background-image": "url(/chat_client.png)",
-      "background-width": "40px",
-      "background-height": "40px",
-      "background-clip": "none",
-      "border-width": 0,
-      "background-opacity": 0,
     },
   },
   {
     selector: 'node[subtype="web"]',
     style: {
       "background-image": "url(/web_client.png)",
-      "background-width": "40px",
-      "background-height": "40px",
-      "background-clip": "none",
-      "border-width": 0,
-      "background-opacity": 0,
     },
   },
   {
