@@ -10,6 +10,8 @@ import ConfigPopup from "@/components/custom/config-button/ConfigPopup";
 import LogsButton from "@/components/custom/logs-button/LogsButton";
 import LogsSidebar from "@/components/custom/logs-button/LogsSidebar";
 import NodeDetailsSidebar from "@/components/custom/NodeDetailsSidebar";
+import HelpButton from "@/components/custom/help-button/HelpButton";
+import HelpModal from "@/components/custom/help-button/HelpModal";
 
 function Index() {
   const [topology, setTopology] = useState<{
@@ -23,6 +25,7 @@ function Index() {
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [isConfigPopupOpen, setIsConfigPopupOpen] = useState(false);
   const [isLogsSidebarOpen, setIsLogsSidebarOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(true);
   const topologyRef = useRef<TopologyVisualizerRef>(null);
   const [trigger, setTrigger] = useState(0);
 
@@ -100,8 +103,19 @@ function Index() {
     setIsLogsSidebarOpen(false);
   };
 
+  const handleOpenHelp = () => {
+    setIsHelpModalOpen(true);
+  };
+
+  const handleCloseHelp = () => {
+    setIsHelpModalOpen(false);
+  };
+
   return (
     <div className="relative w-screen h-screen m-0 p-0 overflow-hidden">
+      {/* Help button at top left */}
+      <HelpButton onClick={handleOpenHelp} />
+
       {/* Fixed positioned toolbar and theme toggle */}
       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 pt-5">
         <ToolBar />
@@ -143,6 +157,9 @@ function Index() {
 
       {/* Logs sidebar */}
       <LogsSidebar isOpen={isLogsSidebarOpen} onClose={handleCloseLogs} />
+
+      {/* Help modal */}
+      <HelpModal isOpen={isHelpModalOpen} onClose={handleCloseHelp} />
 
       {/* Node details sidebar */}
       {selectedNode && (
