@@ -11,3 +11,6 @@ frontend/dist
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables
+.env
