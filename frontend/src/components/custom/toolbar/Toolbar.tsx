@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useToolbarStore, type Tool } from "@/stores/toolbarStore";
 import ToolButton from "@/components/custom/toolbar/ToolButton";
 import NodeTypeMenu from "@/components/custom/toolbar/NodeTypeMenu";
+import { buildApiUrl } from "@/lib/api";
 
 const tools: { id: Tool; icon: React.ElementType; label: string }[] = [
   { id: "cursor", icon: MousePointer, label: "Move" },
@@ -26,7 +27,7 @@ const Toolbar: React.FC = () => {
 
   // Fetch available nodes when component mounts
   useEffect(() => {
-    fetch("/api/nodes")
+    fetch(buildApiUrl("nodes"))
       .then((res) => res.json())
       .then((data) => {
         setAvailableNodes(data.nodes);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { X, Check } from "lucide-react";
+import { buildApiUrl } from "@/lib/api";
 
 interface Configuration {
   id: number;
@@ -24,7 +25,7 @@ const ConfigPopup: React.FC<ConfigPopupProps> = ({
   const [configurations, setConfigurations] = useState<Configuration[]>([]);
 
   useEffect(() => {
-    fetch("/api/configurations")
+    fetch(buildApiUrl("configurations"))
       .then((res) => res.json())
       .then((data) => {
         console.log("Fetched configurations:", data);

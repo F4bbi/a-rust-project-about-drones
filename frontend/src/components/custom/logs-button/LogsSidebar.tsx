@@ -1,5 +1,6 @@
 import { FileText, X } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { buildApiUrl } from "@/lib/api";
 
 interface LogEntry {
   level: string;
@@ -24,7 +25,7 @@ const LogsSidebar: React.FC<LogsSidebarProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       const fetchLogs = () => {
-        fetch(`/api/logs?level=${selectedLogLevel}`)
+        fetch(buildApiUrl(`logs?level=${selectedLogLevel}`))
           .then((res) => res.json())
           .then((data) => setLogs(data.reverse().slice(0, 1000)))
           .catch((err) => console.error("Error fetching logs:", err));

@@ -1,3 +1,5 @@
+import { buildApiUrl } from "@/lib/api";
+
 export const getBackendNodeType = (
   nodeType: string,
   nodeName: string | undefined,
@@ -35,7 +37,7 @@ export const createNode = async (
 ) => {
   const backendNodeType = getBackendNodeType(nodeType, nodeName);
   if (!backendNodeType) throw new Error("Invalid node type");
-  const response = await fetch("/api/nodes", {
+  const response = await fetch(buildApiUrl("nodes"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(backendNodeType),
@@ -52,7 +54,7 @@ export const createNode = async (
 };
 
 export const createEdge = async (fromId: string, toId: string) => {
-  const response = await fetch("/api/edges", {
+  const response = await fetch(buildApiUrl("edges"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ from_id: parseInt(fromId), to_id: parseInt(toId) }),

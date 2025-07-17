@@ -4,6 +4,7 @@ import {
   setDronePacketDropRate,
   crashDrone as crashNode,
 } from "./topology-visualizer/messageApi";
+import { buildApiUrl } from "@/lib/api";
 
 interface NodeDetailsProps {
   node_id_or_undefined: string | undefined;
@@ -46,14 +47,14 @@ const messageTypes: {
   common: [
     {
       name: "Request Server Type",
-      endpoint: "/api/messages/server-type",
+      endpoint: "messages/server-type",
       additionalFormInfo: [],
     },
   ],
   chat: [
     {
       name: "Join",
-      endpoint: "/api/messages/join",
+      endpoint: "messages/join",
       additionalFormInfo: [
         {
           name: "Chat ID",
@@ -73,7 +74,7 @@ const messageTypes: {
     },
     {
       name: "Leave",
-      endpoint: "/api/messages/leave",
+      endpoint: "messages/leave",
       additionalFormInfo: [
         {
           name: "Chat ID",
@@ -86,7 +87,7 @@ const messageTypes: {
     },
     {
       name: "Send Message",
-      endpoint: "/api/messages/send-message",
+      endpoint: "messages/send-message",
       additionalFormInfo: [
         {
           name: "Chat ID",
@@ -106,7 +107,7 @@ const messageTypes: {
     },
     {
       name: "Create",
-      endpoint: "/api/messages/create",
+      endpoint: "messages/create",
       additionalFormInfo: [
         {
           name: "Chat Name",
@@ -132,7 +133,7 @@ const messageTypes: {
     },
     {
       name: "Delete",
-      endpoint: "/api/messages/delete",
+      endpoint: "messages/delete",
       additionalFormInfo: [
         {
           name: "Chat ID",
@@ -145,12 +146,12 @@ const messageTypes: {
     },
     {
       name: "Get Chats",
-      endpoint: "/api/messages/get-chats",
+      endpoint: "messages/get-chats",
       additionalFormInfo: [],
     },
     {
       name: "Get Messages",
-      endpoint: "/api/messages/get-messages",
+      endpoint: "messages/get-messages",
       additionalFormInfo: [
         {
           name: "Chat ID",
@@ -165,12 +166,12 @@ const messageTypes: {
   web: [
     {
       name: "List Public Files",
-      endpoint: "/api/messages/list-public-files",
+      endpoint: "messages/list-public-files",
       additionalFormInfo: [],
     },
     {
       name: "Get Public File",
-      endpoint: "/api/messages/get-public-file",
+      endpoint: "messages/get-public-file",
       additionalFormInfo: [
         {
           name: "File Name",
@@ -183,7 +184,7 @@ const messageTypes: {
     },
     {
       name: "Write Public File",
-      endpoint: "/api/messages/write-public-file",
+      endpoint: "messages/write-public-file",
       additionalFormInfo: [
         {
           name: "File Name",
@@ -203,12 +204,12 @@ const messageTypes: {
     },
     {
       name: "List Private Files",
-      endpoint: "/api/messages/list-private-files",
+      endpoint: "messages/list-private-files",
       additionalFormInfo: [],
     },
     {
       name: "Get Private File",
-      endpoint: "/api/messages/get-private-file",
+      endpoint: "messages/get-private-file",
       additionalFormInfo: [
         {
           name: "File Name",
@@ -221,7 +222,7 @@ const messageTypes: {
     },
     {
       name: "Write Private File",
-      endpoint: "/api/messages/write-private-file",
+      endpoint: "messages/write-private-file",
       additionalFormInfo: [
         {
           name: "File Name",
@@ -270,7 +271,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
   });
 
   const [targetId, setTargetId] = useState<string | undefined>(undefined);
-  const [endpoint, setEndpoint] = useState<string>("/api/messages/server-type");
+  const [endpoint, setEndpoint] = useState<string>("messages/server-type");
   const [data, setData] = useState<any | undefined>({});
 
   const [additionalFormInfo, setAdditionalFormInfo] = useState<
@@ -291,7 +292,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
 
   useEffect(() => {
     if (node_type === "client") {
-      fetch("/api/node/" + node_id + "/messages")
+      fetch(buildApiUrl(`node/${node_id}/messages`))
         .then((res) => res.json())
         .then((data) => {
           console.log(version, data.version);
@@ -319,7 +320,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
 
   useEffect(() => {
     // Fetch topology data
-    fetch("/api/node/" + node_id)
+    fetch(buildApiUrl(`node/${node_id}`))
       .then((res) => res.json())
       .then((data) => {
         setNeighbors(data.neighbours || []);
@@ -587,7 +588,7 @@ const NodeDetailsSidebar: React.FC<NodeDetailsProps> = ({
                       from_id: node_id,
                       ...data,
                     });
-                    fetch(endpoint || "", {
+                    fetch(buildApiUrl(endpoint || ""), {
                       method: "POST",
                       headers: {
                         "Content-Type": "application/json",

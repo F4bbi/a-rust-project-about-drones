@@ -12,6 +12,7 @@ import LogsSidebar from "@/components/custom/logs-button/LogsSidebar";
 import NodeDetailsSidebar from "@/components/custom/NodeDetailsSidebar";
 import HelpButton from "@/components/custom/help-button/HelpButton";
 import HelpModal from "@/components/custom/help-button/HelpModal";
+import { buildApiUrl } from "@/lib/api";
 
 function Index() {
   const [topology, setTopology] = useState<{
@@ -31,7 +32,7 @@ function Index() {
 
   useEffect(() => {
     // Fetch topology data
-    fetch("/api/topology")
+    fetch(buildApiUrl("topology"))
       .then((res) => res.json())
       .then((data) => {
         setTopology({
@@ -56,7 +57,7 @@ function Index() {
     // Remove the edge from the Cytoscape graph
     topologyRef.current?.removeEdge(fromNodeId, toNodeId);
 
-    fetch("/api/edges", {
+    fetch(buildApiUrl("edges"), {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -86,7 +87,7 @@ function Index() {
 
   const handleSelectConfig = (configId: number) => {
     console.log(`Selected configuration: ${configId}`);
-    fetch("/api/configurations", {
+    fetch(buildApiUrl("configurations"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: configId }),
