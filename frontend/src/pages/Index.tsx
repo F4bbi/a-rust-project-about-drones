@@ -3,7 +3,7 @@ import type { ElementDefinition } from "cytoscape";
 import TopologyVisualizer, {
   type TopologyVisualizerRef,
 } from "@/components/custom/topology-visualizer/TopologyVisualizer";
-import ThemeToggleButton from "@/components/ui/theme-toggle";
+import ThemeToggleButton from "@/components/custom/theme-toggle/ThemeToggle";
 import ToolBar from "@/components/custom/toolbar/Toolbar";
 import ConfigButton from "@/components/custom/config-button/ConfigButton";
 import ConfigPopup from "@/components/custom/config-button/ConfigPopup";
@@ -12,6 +12,7 @@ import LogsSidebar from "@/components/custom/logs-button/LogsSidebar";
 import NodeDetailsSidebar from "@/components/custom/NodeDetailsSidebar";
 import HelpButton from "@/components/custom/help-button/HelpButton";
 import HelpModal from "@/components/custom/help-button/HelpModal";
+import GitHubButton from "@/components/custom/github-button/GitHubButton";
 import { buildApiUrl } from "@/lib/api";
 
 function Index() {
@@ -148,6 +149,9 @@ function Index() {
 
       {/* Logs button at bottom right */}
       <LogsButton onClick={handleOpenLogs} />
+
+      {/* GitHub button at bottom center */}
+      <GitHubButton />
 
       {/* Configuration popup */}
       <ConfigPopup

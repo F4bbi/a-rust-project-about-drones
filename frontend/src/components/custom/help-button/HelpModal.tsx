@@ -140,9 +140,9 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
           <section>
             <h3 className="text-xl font-semibold mb-3 text-primary">📄 Want to learn more?</h3>
             <p className="text-muted-foreground mb-4">
-              If you're curious about how communication between nodes works, how each node becomes aware of the network topology, or other technical aspects of the simulation, feel free to check out the full project specifications{" "}
-              <a 
-                href="https://github.com/LuigiMiazzo17/unitn-advancedProgramming-WGL_2024-rust/tree/master/README.md" 
+              If you're curious about how communication between nodes works, how each node becomes aware of the network topology, or other technical aspects of the simulation, feel free to check out the backend part{" "}
+              <a
+                href="https://github.com/LuigiMiazzo17/unitn-advancedProgramming-WGL_2024-rust/tree/master" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-blue-600 dark:text-blue-400 hover:underline"
